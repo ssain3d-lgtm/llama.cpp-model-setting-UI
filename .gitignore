@@ -1,0 +1,18 @@
+# llama.cpp 릴리스 폴더 안에서 레포로 쓰기 때문에 기본은 전부 제외하고 필요한 파일만 포함
+/*
+!/.gitignore
+!/.gitattributes
+!/README.md
+!/config-ui/
+!/config-ui.bat
+!/docs/
+!/sync-lmstudio.py
+!/watch-lmstudio.py
+!/start-router.ps1
+!/start-router.bat
+!/open-webui.bat
+!/mcp-http-gateway.py
+!/mcp-lazy-proxy.py
+__pycache__/
+*.bak
+*.log

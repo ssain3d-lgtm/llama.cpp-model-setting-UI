@@ -1,0 +1,786 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>llama.cpp 설정</title>
+<style>
+:root {
+  --bg: #f4f5f7; --panel: #ffffff; --panel2: #f9fafb; --line: #e3e6eb; --line2: #eef0f3;
+  --text: #1c2129; --muted: #69717d; --faint: #9aa1ab;
+  --accent: #2f6fde; --accent-bg: #e8f0fd; --ok: #1f9d55; --ok-bg: #e5f5ec;
+  --warn: #b7791f; --warn-bg: #fcf3e3; --err: #d64545; --err-bg: #fbeaea; --sleep: #7c6fd6;
+  --radius: 8px; --shadow: 0 1px 2px rgba(20,25,35,.06), 0 4px 16px rgba(20,25,35,.06);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14171c; --panel: #1b1f26; --panel2: #20252d; --line: #2c323c; --line2: #252a33;
+    --text: #e3e6eb; --muted: #9aa2ad; --faint: #6b737e;
+    --accent: #6ea0ff; --accent-bg: #22314d; --ok: #48c07a; --ok-bg: #1d3328;
+    --warn: #e0a84e; --warn-bg: #3a2f1c; --err: #f07070; --err-bg: #3d2224; --sleep: #a69bff;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+  }
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 14px/1.45 "Segoe UI", "Malgun Gothic", system-ui, sans-serif; display: flex; flex-direction: column; }
+[hidden] { display: none !important; }
+code, pre, .mono { font-family: "Cascadia Mono", Consolas, "D2Coding", monospace; font-size: 12.5px; }
+button { font: inherit; color: inherit; background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  padding: 5px 12px; cursor: pointer; white-space: nowrap; }
+button:hover:not(:disabled) { border-color: var(--faint); }
+button:disabled { opacity: .45; cursor: default; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.danger { color: var(--err); }
+button.ghost { background: transparent; }
+button.icon { padding: 2px 7px; font-size: 13px; line-height: 1.2; }
+input[type=text], input[type=search], input[type=number], select {
+  font: inherit; color: inherit; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; min-width: 0; }
+input:focus, select:focus { outline: 2px solid var(--accent-bg); border-color: var(--accent); }
+input::placeholder { color: var(--faint); }
+
+/* header */
+.top { display: flex; align-items: center; gap: 14px; padding: 0 18px; height: 52px; background: var(--panel);
+  border-bottom: 1px solid var(--line); flex: none; }
+.brand { font-weight: 650; font-size: 15px; letter-spacing: -.01em; }
+.tabs { display: flex; gap: 2px; margin-left: 8px; }
+.tabs button { border: none; background: none; padding: 6px 12px; color: var(--muted); border-radius: 6px; }
+.tabs button.on { color: var(--text); background: var(--line2); font-weight: 600; }
+.spacer { flex: 1; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 99px; font-size: 12.5px;
+  background: var(--line2); color: var(--muted); }
+.pill.up { background: var(--ok-bg); color: var(--ok); }
+.pill.down { background: var(--err-bg); color: var(--err); }
+.vram { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.vram .bar { width: 120px; height: 7px; border-radius: 9px; background: var(--line2); overflow: hidden; }
+.vram .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .4s; }
+.vram.hot .bar i { background: var(--err); }
+.top a { color: var(--accent); text-decoration: none; font-size: 13px; }
+
+/* models layout */
+.models { flex: 1; display: grid; grid-template-columns: 310px 1fr; min-height: 0; }
+.list { border-right: 1px solid var(--line); overflow: auto; background: var(--panel2); padding: 10px 8px; }
+.list h4 { margin: 4px 8px 8px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.mi { display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: start; padding: 9px 10px; border-radius: var(--radius);
+  cursor: pointer; border: 1px solid transparent; }
+.mi:hover { background: var(--line2); }
+.mi.on { background: var(--panel); border-color: var(--line); box-shadow: var(--shadow); }
+.mi .mt { min-width: 0; }
+.mi .mn { display: block; font-weight: 600; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mi .mid { display: block; font-size: 11.5px; color: var(--faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mi .mb { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; font-size: 11.5px; color: var(--muted); align-items: center; }
+.mi .mb b, .badge { font-weight: 600; font-size: 10.5px; padding: 0 5px; border-radius: 4px; background: var(--line2); color: var(--muted); }
+.mi .mb .dirty { background: var(--warn-bg); color: var(--warn); }
+.mi .mb .cnt { background: var(--accent-bg); color: var(--accent); }
+.mi button { padding: 2px 8px; font-size: 12px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 5px; background: var(--faint); opacity: .5; }
+.dot.s-loaded { background: var(--ok); opacity: 1; box-shadow: 0 0 0 3px var(--ok-bg); }
+.dot.s-loading { background: var(--warn); opacity: 1; animation: pulse 1s infinite; }
+.dot.s-sleeping { background: var(--sleep); opacity: .9; }
+.dot.s-failed { background: var(--err); opacity: 1; }
+@keyframes pulse { 50% { opacity: .3; } }
+
+.detail { overflow: auto; min-width: 0; position: relative; }
+.dwrap { max-width: 1080px; margin: 0 auto; padding: 18px 24px 90px; }
+.dh { display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+.dh h2 { margin: 0 0 3px; font-size: 19px; letter-spacing: -.01em; }
+.dmeta { color: var(--muted); font-size: 12.5px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+.dmeta code { color: var(--text); background: var(--line2); padding: 0 5px; border-radius: 4px; }
+.dact { display: flex; gap: 8px; align-items: center; }
+.st-label { font-size: 12.5px; padding: 3px 10px; border-radius: 99px; background: var(--line2); color: var(--muted); }
+.st-label.s-loaded { background: var(--ok-bg); color: var(--ok); }
+.st-label.s-loading { background: var(--warn-bg); color: var(--warn); }
+.st-label.s-sleeping { color: var(--sleep); }
+.st-label.s-failed { background: var(--err-bg); color: var(--err); }
+.notes { margin: 10px 0 0; padding: 8px 12px; background: var(--warn-bg); color: var(--warn); border-radius: var(--radius); font-size: 12.5px; }
+.args { margin-top: 10px; font-size: 12.5px; }
+.args summary { cursor: pointer; color: var(--muted); }
+.args pre { white-space: pre-wrap; word-break: break-all; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 10px 12px; margin: 6px 0 0; max-height: 220px; overflow: auto; }
+.tools { display: flex; gap: 10px; align-items: center; margin: 16px 0 6px; flex-wrap: wrap; position: sticky; top: 0; z-index: 3;
+  background: var(--bg); padding: 8px 0; }
+.tools input[type=search] { flex: 1; min-width: 220px; padding: 7px 10px; }
+.chk { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); font-size: 13px; cursor: pointer; user-select: none; }
+
+.group { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; margin: 12px 0; box-shadow: var(--shadow); }
+.group > h3 { margin: 0; padding: 11px 16px 9px; font-size: 13.5px; border-bottom: 1px solid var(--line2); display: flex; gap: 10px; align-items: baseline; }
+.group > h3 small { font-weight: 400; color: var(--muted); font-size: 12px; }
+.row { display: grid; grid-template-columns: minmax(230px, 1.15fr) minmax(210px, 1fr) 150px; gap: 14px; align-items: center;
+  padding: 9px 16px; border-top: 1px solid var(--line2); }
+.group > h3 + .row { border-top: none; }
+.row .nm { font-weight: 600; }
+.row .lt { display: flex; gap: 7px; align-items: baseline; flex-wrap: wrap; }
+.row .lt code { color: var(--muted); font-size: 11.5px; }
+.row .ds { color: var(--muted); font-size: 12px; margin-top: 1px; }
+.row.plain .ds { font-size: 11.5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.row.plain:hover .ds { -webkit-line-clamp: unset; }
+.row .ctl { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; min-width: 0; }
+.row .ctl > input[type=text], .row .ctl > select { flex: 1; min-width: 120px; }
+.row .ctl .err { flex-basis: 100%; color: var(--err); font-size: 11.5px; }
+.row .st { display: flex; gap: 4px; align-items: center; justify-content: flex-end; }
+.row.set { background: linear-gradient(90deg, var(--accent-bg), transparent 55%); }
+.row.dirty { background: linear-gradient(90deg, var(--warn-bg), transparent 55%); }
+.row.invalid input { border-color: var(--err); }
+.row.disabled { opacity: .6; }
+.tag { font-size: 11px; padding: 1px 7px; border-radius: 99px; background: var(--line2); color: var(--muted); white-space: nowrap; }
+.tag.user { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+.tag.dirty { background: var(--warn-bg); color: var(--warn); font-weight: 600; }
+.tag.removed { background: var(--err-bg); color: var(--err); }
+.tag.src-auto { color: var(--ok); }
+.dep { font-size: 10.5px; color: var(--warn); }
+.ctxwrap { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 180px; }
+.ctxwrap .ctxline { display: flex; gap: 8px; align-items: center; }
+.ctxwrap input[type=range] { flex: 1; accent-color: var(--accent); }
+.ctxwrap input[type=range].ghost { opacity: .45; }
+.ctxwrap input[type=text] { width: 96px; }
+.chips { display: flex; gap: 4px; flex-wrap: wrap; }
+.chips button { padding: 0 7px; font-size: 11.5px; border-radius: 99px; }
+details.all > summary { cursor: pointer; font-weight: 600; margin: 22px 0 4px; padding: 6px 0; list-style: none; display: flex; gap: 8px; align-items: center; }
+details.all > summary::before { content: "▸"; color: var(--muted); transition: transform .15s; }
+details.all[open] > summary::before { transform: rotate(90deg); }
+details.all > summary small { color: var(--muted); font-weight: 400; }
+.unknown { font-size: 12.5px; }
+.empty { color: var(--muted); padding: 40px; text-align: center; }
+
+.savebar { position: sticky; bottom: 14px; z-index: 5; margin: 18px auto 0; max-width: 640px; display: flex; gap: 10px; align-items: center;
+  background: var(--panel); border: 1px solid var(--warn); border-radius: 10px; padding: 9px 12px 9px 16px; box-shadow: var(--shadow); }
+.savebar .sbt { flex: 1; font-weight: 600; }
+.savebar .sbt small { font-weight: 400; color: var(--muted); margin-left: 6px; }
+
+/* router tab */
+.router { flex: 1; overflow: auto; }
+.rwrap { max-width: 860px; margin: 0 auto; padding: 20px 24px 60px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); margin-bottom: 16px; }
+.card-h { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line2); flex-wrap: wrap; }
+.card-h h3 { margin: 0; font-size: 14px; }
+.card-b { padding: 12px 16px; }
+.card .btns { display: flex; gap: 8px; }
+.kv { display: grid; grid-template-columns: 120px 1fr; gap: 6px 12px; font-size: 13px; }
+.kv > div:nth-child(odd) { color: var(--muted); }
+.kv pre { margin: 0; white-space: pre-wrap; word-break: break-all; }
+.rform .row { grid-template-columns: minmax(230px, 1.2fr) minmax(160px, 1fr); }
+.mismatch { margin-top: 10px; padding: 8px 12px; border-radius: var(--radius); background: var(--warn-bg); color: var(--warn); font-size: 12.5px; }
+.muted { color: var(--muted); font-size: 12.5px; }
+
+/* modal / toast */
+.modal { position: fixed; inset: 0; background: rgba(10,12,16,.45); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+.modal .box { background: var(--panel); border-radius: 12px; max-width: 560px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,.3); }
+.modal h3 { margin: 0; padding: 16px 18px 6px; font-size: 15px; }
+.modal .mb2 { padding: 4px 18px 8px; max-height: 60vh; overflow: auto; font-size: 13.5px; }
+.modal .mb2 ul { padding-left: 18px; margin: 6px 0; }
+.modal .mb2 li { margin: 2px 0; word-break: break-all; }
+.modal .mb2 .warnp { background: var(--warn-bg); color: var(--warn); padding: 8px 10px; border-radius: 6px; }
+.modal .mf { display: flex; justify-content: flex-end; gap: 8px; padding: 10px 18px 16px; }
+.spin { width: 18px; height: 18px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: rot .8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
+@keyframes rot { to { transform: rotate(360deg); } }
+.toasts { position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 60; max-width: 460px; }
+.toast { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 8px; padding: 9px 12px;
+  box-shadow: var(--shadow); font-size: 13px; white-space: pre-wrap; word-break: break-word; }
+.toast.ok { border-left-color: var(--ok); }
+.toast.err { border-left-color: var(--err); }
+
+@media (max-width: 900px) {
+  .models { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .list { max-height: 34vh; border-right: none; border-bottom: 1px solid var(--line); }
+  .row, .rform .row { grid-template-columns: 1fr; gap: 6px; }
+  .row .st { justify-content: flex-start; }
+  .vram .bar { width: 60px; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">llama.cpp 설정</div>
+  <nav class="tabs"><button data-tab="models" class="on">모델</button><button data-tab="router">라우터</button></nav>
+  <div class="spacer"></div>
+  <span id="routerPill" class="pill">라우터 확인 중…</span>
+  <div class="vram" id="vram" title="GPU 메모리"><div class="bar"><i></i></div><span>VRAM -</span></div>
+  <a id="webuiLink" href="#" target="_blank" rel="noopener">WebUI ↗</a>
+</header>
+
+<main class="models" id="tab-models">
+  <aside class="list" id="modelList"><div class="empty">불러오는 중…</div></aside>
+  <section class="detail" id="detail"></section>
+</main>
+
+<main class="router" id="tab-router" hidden>
+  <div class="rwrap">
+    <section class="card">
+      <div class="card-h"><h3>라우터 상태</h3>
+        <div class="btns"><button id="rStart">시작</button><button id="rStop" class="danger">중지</button><button id="rRestart" class="primary">재시작</button></div>
+      </div>
+      <div class="card-b" id="rInfo">확인 중…</div>
+    </section>
+    <section class="card">
+      <div class="card-h"><h3>실행 옵션 <small class="muted">start-router.ps1</small></h3><button id="rSave" class="primary">저장</button></div>
+      <div class="card-b">
+        <p class="muted" style="margin:0 0 6px">저장한 뒤 <b>재시작</b>해야 적용돼요. 바탕화면 'llama.cpp WebUI' 바로가기로 라우터를 켤 때도 이 값을 써요.</p>
+      </div>
+      <div class="rform" id="rForm"></div>
+    </section>
+    <section class="card">
+      <div class="card-h"><h3>파일</h3></div>
+      <div class="card-b kv" id="rFiles"></div>
+    </section>
+  </div>
+</main>
+
+<div class="modal" id="modal" hidden><div class="box"><h3 id="mTitle"></h3><div class="mb2" id="mBody"></div><div class="mf" id="mFoot"></div></div></div>
+<div class="toasts" id="toasts"></div>
+
+<script>
+'use strict';
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let S = null, LIVE = null, CUR = null, OPT = {}, ALIAS = {};
+const DRAFT = {};            // 모델 id -> Map(옵션 id -> 값 | null(내 설정 지움) | '!'(자동 값 제거))
+const TRUTHY = ['on', 'enabled', 'true', '1'];
+const STATUS_KO = { loaded: '로드됨', loading: '로딩 중', unloaded: '언로드됨', sleeping: '슬립 (VRAM 해제됨)',
+  downloading: '다운로드 중', downloaded: '다운로드됨', failed: '로드 실패', unknown: '알 수 없음', off: '라우터 꺼짐' };
+const SRC_KO = { auto: 'LM Studio 자동', global: '공통 [*]', default: 'llama.cpp 기본값' };
+const GROUP_ORDER = ['공통', '샘플링', '추측 디코딩', '서버', '라우터 전용'];
+
+const CURATED = [
+  { title: '컨텍스트 · 메모리', items: [
+    ['ctx-size', '컨텍스트 길이', '한 번에 기억하는 토큰 수. 늘리면 KV 캐시만큼 VRAM 을 더 씀. 0 = 모델 학습값'],
+    ['cache-type-k', 'KV 캐시 K 타입', 'f16 기본. q8_0 이면 KV 메모리 약 절반, 품질 손실 거의 없음'],
+    ['cache-type-v', 'KV 캐시 V 타입', '보통 K 와 같게. V 양자화는 Flash Attention 이 켜져 있어야 함'],
+    ['n-gpu-layers', 'GPU 레이어', 'all = 전부 VRAM. 모자라면 숫자를 줄여 일부를 CPU(RAM)로'],
+    ['n-cpu-moe', 'MoE 전문가 CPU 레이어 수', 'MoE 모델(A3B 등)에서 앞쪽 N개 레이어의 전문가 가중치를 RAM 에 둠. VRAM 절약, 속도 감소'],
+    ['flash-attn', 'Flash Attention', 'on 권장. 메모리 절약 + KV 캐시 양자화에 필요'],
+  ]},
+  { title: '처리 · 속도', items: [
+    ['parallel', '동시 요청 수 (슬롯)', '동시에 처리할 요청 수. 컨텍스트가 슬롯 수로 나뉘므로 혼자 쓰면 1'],
+    ['batch-size', '논리 배치', '프롬프트를 한 번에 넘기는 최대 토큰 수'],
+    ['ubatch-size', '물리 배치', '키우면 긴 프롬프트 처리가 빨라지지만 VRAM 을 더 씀'],
+    ['threads', 'CPU 스레드', '생성에 쓰는 CPU 스레드. 전부 GPU 에 올렸으면 영향 적음'],
+  ]},
+  { title: '추측 디코딩 (MTP · 드래프트)', items: [
+    ['spec-type', '방식', 'draft-mtp = 모델 내장 MTP 헤드 / 드래프터 사용,  none = 끔'],
+    ['spec-draft-n-max', '드래프트 토큰 수', '한 번에 미리 추측할 토큰 수 (보통 3)'],
+    ['spec-draft-model', '드래프트 모델 파일', '별도 드래프터 GGUF 경로 (Gemma4 는 mtp-*.gguf 자동 연결)'],
+    ['spec-draft-p-min', '드래프트 최소 확률', '이 확률보다 낮은 추측 토큰은 버림'],
+  ]},
+  { title: '샘플링 기본값', note: 'API 요청에 값이 없을 때 쓰임 · WebUI 는 WebUI 설정에서 직접 바꾼 항목이 우선', items: [
+    ['temp', '온도', '낮을수록 일관·정확, 높을수록 다양·창의적'],
+    ['top-k', 'Top-K', '확률 상위 K개 토큰만 후보 (0 = 끔)'],
+    ['top-p', 'Top-P', '누적 확률 P 안의 토큰만 후보 (1.0 = 끔)'],
+    ['min-p', 'Min-P', '최고 확률 대비 이 비율보다 낮은 토큰 제외 (0 = 끔)'],
+    ['repeat-penalty', '반복 패널티', '1.0 = 끔. 1.05~1.1 이면 같은 말 반복을 줄임'],
+    ['presence-penalty', '등장 패널티', '이미 나온 토큰에 고정 패널티 (0 = 끔)'],
+    ['frequency-penalty', '빈도 패널티', '많이 나온 토큰일수록 큰 패널티 (0 = 끔)'],
+    ['n-predict', '최대 생성 토큰', '-1 = 무제한 (요청의 max_tokens 가 없을 때)'],
+    ['seed', '시드', '-1 = 매번 랜덤. 고정하면 같은 입력에 같은 출력'],
+  ]},
+  { title: '추론 (thinking)', items: [
+    ['reasoning', '추론 모드', 'auto = 채팅 템플릿에 따름,  off = 생각 안 하고 바로 답'],
+    ['reasoning-budget', '추론 토큰 예산', '-1 = 무제한,  0 = 즉시 종료,  N = 최대 N 토큰만 생각'],
+    ['reasoning-format', '추론 출력 형식', 'deepseek = reasoning_content 로 분리,  none = 본문에 그대로'],
+    ['chat-template-kwargs', '템플릿 추가 인자 (JSON)', '예: {"enable_thinking":false}'],
+  ]},
+  { title: '라우터 · 기타', items: [
+    ['load-on-startup', '라우터 시작 시 자동 로드', '켜면 라우터를 켤 때 바로 VRAM 에 올림'],
+    ['sleep-idle-seconds', '유휴 시 VRAM 해제 (초)', '요청 없이 이 시간이 지나면 VRAM 해제, 다음 요청 때 자동 재로드. -1 = 안 내림'],
+    ['mmproj', '비전 프로젝터 (mmproj)', '이미지 입력용 파일. ✕ 로 자동 값을 제거하면 비전 끔'],
+    ['model', '모델 파일', 'GGUF 경로 (LM Studio 모델은 변경 불가)'],
+  ]},
+];
+
+// ------------------------------------------------------------------ util
+async function api(path, body) {
+  const init = body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
+  const r = await fetch(path, init);
+  const d = await r.json().catch(() => ({ error: r.status + ' ' + r.statusText }));
+  if (!r.ok) throw new Error(d.error || r.statusText);
+  return d;
+}
+function toast(msg, kind = '', ms = 4500) {
+  const t = document.createElement('div'); t.className = 'toast ' + kind; t.textContent = msg;
+  $('#toasts').append(t); setTimeout(() => t.remove(), ms);
+}
+function modal(title, html, buttons) {
+  return new Promise(res => {
+    $('#mTitle').textContent = title; $('#mBody').innerHTML = html; const f = $('#mFoot'); f.innerHTML = '';
+    for (const [label, val, cls] of buttons) {
+      const b = document.createElement('button'); b.textContent = label; if (cls) b.className = cls;
+      b.onclick = () => { $('#modal').hidden = true; res(val); }; f.append(b);
+    }
+    $('#modal').hidden = false; (f.lastChild || f).focus?.();
+  });
+}
+const confirmBox = (title, html, ok = '확인', cls = 'primary') => modal(title, html, [['취소', false, 'ghost'], [ok, true, cls]]);
+function busy(msg) {
+  if (!msg) { $('#modal').hidden = true; return; }
+  $('#mTitle').textContent = ''; $('#mBody').innerHTML = `<p><span class="spin"></span>${esc(msg)}</p>`; $('#mFoot').innerHTML = '';
+  $('#modal').hidden = false;
+}
+const fmtNum = n => Number(n).toLocaleString('ko-KR');
+const model = id => S.models.find(m => m.id === id);
+const resolve = name => ALIAS[name] || name;
+function statusOf(id) {
+  const r = LIVE?.router?.models;
+  if (!r) return 'off';
+  const x = r[id]; if (!x) return 'unknown';
+  return x.failed ? 'failed' : x.status;
+}
+const isRunning = st => ['loaded', 'loading', 'sleeping'].includes(st);
+
+// ------------------------------------------------------------------ 값 계산
+const savedVal = (m, id) => m.override[id]?.value ?? null;
+function curVal(m, id) { const d = DRAFT[m.id]; return d && d.has(id) ? d.get(id) : savedVal(m, id); }
+function inherited(m, id, removedAuto) {
+  if (m.auto[id] && !removedAuto) return { v: m.auto[id].value, src: 'auto' };
+  if (S.global[id]) return { v: S.global[id].value, src: 'global' };
+  return { v: OPT[id]?.default ?? '', src: 'default' };
+}
+function fmtVal(o, v) {
+  if (v === null || v === undefined || v === '') return o.kind === 'flag' ? '꺼짐' : '';
+  if (o.kind === 'bool' || o.kind === 'flag') {
+    const s = String(v).toLowerCase();
+    if (TRUTHY.includes(s)) return '켜짐';
+    if (['off', 'disabled', 'false', '0'].includes(s)) return '꺼짐';
+  }
+  if (o.id === 'ctx-size' && /^\d+$/.test(v) && +v > 0) return fmtNum(v);
+  return String(v);
+}
+function validate(o, v) {
+  if (v === null || v === '!') return '';
+  if (/[;#]/.test(v)) return '; 와 # 는 쓸 수 없어요 (llama.cpp ini 에서 주석으로 잘림)';
+  if (o.kind === 'number' && !(o.suggest || []).includes(v) && !/^-?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(v))
+    return '숫자를 입력하세요' + (o.suggest?.length ? ` (또는 ${o.suggest.join(', ')})` : '');
+  if (o.kind === 'enum' && !o.choices.includes(v)) return `${o.choices.join(', ')} 중 하나`;
+  return '';
+}
+function draftErrors(m) {
+  const d = DRAFT[m.id]; if (!d) return [];
+  return [...d].map(([id, v]) => [id, validate(OPT[id], v)]).filter(x => x[1]);
+}
+function setDraft(m, id, val, fromInput) {
+  const d = DRAFT[m.id] ??= new Map();
+  if (val === savedVal(m, id)) d.delete(id); else d.set(id, val);
+  if (!d.size) delete DRAFT[m.id];
+  $$(`#detail .row[data-id="${CSS.escape(id)}"]`).forEach(r => refreshRow(r, m, fromInput));
+  updateSaveBar(); renderList();
+}
+
+// ------------------------------------------------------------------ 모델 목록
+let listSig = '';
+function renderList() {
+  const el = $('#modelList');
+  if (!S.models.length) { el.innerHTML = '<div class="empty">모델이 없어요</div>'; return; }
+  const sig = JSON.stringify([CUR, S.models.map(m => [m.id, statusOf(m.id), Object.keys(m.override).length, DRAFT[m.id]?.size || 0])]);
+  if (sig === listSig && el.querySelector('.mi')) return;
+  listSig = sig;
+  el.innerHTML = `<h4>모델 ${S.models.length}개</h4>` + S.models.map(m => {
+    const st = statusOf(m.id); const nOver = Object.keys(m.override).filter(k => k !== 'model').length;
+    const dirty = DRAFT[m.id]?.size;
+    const btn = st === 'off' ? '' : isRunning(st) ? `<button data-act="unload" title="VRAM 에서 내리기">언로드</button>` : `<button data-act="load" title="VRAM 에 올리기">로드</button>`;
+    return `<div class="mi ${m.id === CUR ? 'on' : ''}" data-id="${esc(m.id)}" title="${esc(m.id)}">
+      <span class="dot s-${st}" title="${esc(STATUS_KO[st] || st)}"></span>
+      <span class="mt"><span class="mn">${esc(m.display)}</span><span class="mid">${esc(m.id)}</span>
+        <span class="mb">${m.mtp ? '<b>MTP</b>' : ''}${m.vision ? '<b>비전</b>' : ''}${m.draft ? '<b>드래프터</b>' : ''}${m.extra ? '<b>수동 추가</b>' : ''}
+        ${m.size_gb ? `<span>${m.size_gb}GB</span>` : ''}${nOver ? `<b class="cnt">내 설정 ${nOver}</b>` : ''}${dirty ? `<b class="dirty">저장 안 됨 ${dirty}</b>` : ''}</span></span>
+      ${btn}</div>`;
+  }).join('');
+  $$('.mi', el).forEach(item => {
+    item.onclick = e => {
+      const act = e.target.closest('button')?.dataset.act;
+      if (act) return loadUnload(item.dataset.id, act);
+      if (item.dataset.id !== CUR) { CUR = item.dataset.id; renderList(); renderDetail(); $('#detail').scrollTop = 0; }
+    };
+  });
+}
+
+async function loadUnload(id, act) {
+  try {
+    await api('/api/model/' + act, { id });
+    toast(act === 'load' ? `로드 요청: ${id}` : `언로드: ${id}`, 'ok');
+  } catch (e) { toast(e.message, 'err', 7000); }
+  setTimeout(pollLive, 300);
+}
+
+// ------------------------------------------------------------------ 상세
+function renderDetail() {
+  const el = $('#detail');
+  const m = model(CUR);
+  if (!m) { el.innerHTML = '<div class="empty">모델을 선택하세요</div>'; return; }
+  const meta = [
+    `<code>${esc(m.id)}</code>`, esc(m.arch), m.size_gb ? m.size_gb + 'GB' : '',
+    m.ctx_train ? `학습 컨텍스트 ${fmtNum(m.ctx_train)}` : '', m.mtp ? 'MTP 내장' : '', m.vision ? '비전' : '',
+    m.draft ? `드래프터 ${esc(m.draft)}` : '', esc(m.file),
+  ].filter(Boolean).join('<span>·</span>');
+  el.innerHTML = `<div class="dwrap">
+    <div class="dh"><div><h2>${esc(m.display)}</h2><div class="dmeta">${meta}</div></div>
+      <div class="dact"><span class="st-label" id="dStatus"></span><button id="dLoad"></button></div></div>
+    ${m.notes.length ? `<div class="notes">${m.notes.map(esc).join('<br>')}</div>` : ''}
+    <details class="args"><summary>실제 실행 인자 (라우터 기준)</summary><pre id="dArgs"></pre></details>
+    <div class="tools"><input type="search" id="q" placeholder="옵션 검색 — 이름·설명 (예: rope, cache, draft, 온도)">
+      <label class="chk"><input type="checkbox" id="onlySet"> 값이 있는 옵션만</label>
+      <button class="ghost" id="resetAll" title="이 모델의 내 설정(override)을 모두 지우고 자동 값으로">내 설정 모두 지우기</button></div>
+    <div id="curated"></div>
+    ${m.unknown.length ? `<div class="group unknown"><h3>알 수 없는 키 <small>이 llama-server 가 모르는 키 (읽기 전용)</small></h3>
+      ${m.unknown.map(([k, v]) => `<div class="row"><code>${esc(k)}</code><code>${esc(v)}</code><span></span></div>`).join('')}</div>` : ''}
+    <details class="all" id="allopts"><summary>전체 옵션 <small id="allCount"></small></summary><div id="allGroups"></div></details>
+    <div class="savebar" id="saveBar" hidden><span class="sbt" id="sbText"></span>
+      <button class="ghost" id="sbRevert">되돌리기</button><button class="primary" id="sbSave">저장하고 적용</button></div>
+  </div>`;
+
+  const curatedIds = new Set();
+  const cur = $('#curated');
+  for (const g of CURATED) {
+    const box = document.createElement('div'); box.className = 'group';
+    box.innerHTML = `<h3>${esc(g.title)}${g.note ? `<small>${esc(g.note)}</small>` : ''}</h3>`;
+    for (const [name, label, desc] of g.items) {
+      const id = resolve(name);
+      if (!OPT[id]) continue;
+      curatedIds.add(id);
+      box.append(rowEl(m, id, label, desc));
+    }
+    cur.append(box);
+  }
+  const groups = {};
+  for (const o of S.options) {
+    if (curatedIds.has(o.id)) continue;
+    (groups[o.group] ??= []).push(o);
+  }
+  const names = [...GROUP_ORDER.filter(g => groups[g]), ...Object.keys(groups).filter(g => !GROUP_ORDER.includes(g))];
+  const all = $('#allGroups'); let n = 0;
+  for (const gname of names) {
+    const box = document.createElement('div'); box.className = 'group';
+    box.innerHTML = `<h3>${esc(gname)} <small>${groups[gname].length}개</small></h3>`;
+    for (const o of groups[gname]) { box.append(rowEl(m, o.id)); n++; }
+    all.append(box);
+  }
+  $('#allCount').textContent = `${n}개 · llama-server --help 에서 자동 생성`;
+
+  $('#q').oninput = applyFilter; $('#onlySet').onchange = applyFilter;
+  $('#resetAll').onclick = () => {
+    const ids = Object.keys(m.override).filter(k => !(m.extra && k === 'model'));
+    if (!ids.length) return toast('지울 내 설정이 없어요');
+    ids.forEach(id => setDraft(m, id, null));
+    toast(`${ids.length}개 항목을 지우도록 표시했어요. '저장하고 적용'을 눌러야 반영돼요.`);
+  };
+  $('#sbRevert').onclick = () => { delete DRAFT[m.id]; renderDetail(); renderList(); };
+  $('#sbSave').onclick = save;
+  $('#dLoad').onclick = () => loadUnload(m.id, isRunning(statusOf(m.id)) ? 'unload' : 'load');
+  updateSaveBar(); renderLiveDetail();
+}
+
+function rowEl(m, id, label, desc) {
+  const o = OPT[id];
+  const row = document.createElement('div');
+  row.className = 'row' + (label ? '' : ' plain'); row.dataset.id = id;
+  const alias = [...o.names, ...o.neg].filter(x => x !== id && x.length > 2).map(x => '--' + x);
+  row.dataset.hay = [id, ...o.names, ...o.neg, label, desc, o.help].join(' ').toLowerCase();
+  row.innerHTML = `<div class="lab">
+      <div class="lt">${label ? `<span class="nm">${esc(label)}</span><code>--${esc(id)}</code>` : `<code class="nm">--${esc(id)}</code>`}
+        ${o.deprecated ? '<span class="dep">사용 중단 예정</span>' : ''}${o.reserved ? '<span class="dep">라우터가 관리</span>' : ''}</div>
+      <div class="ds">${esc(desc || o.help)}</div></div>
+    <div class="ctl"></div><div class="st"></div>`;
+  row.querySelector('.lab').title = (alias.length ? '별칭: ' + alias.join(', ') + '\n\n' : '') + o.help + (o.default ? `\n\n기본값: ${o.default}` : '');
+  const ctl = row.querySelector('.ctl');
+  const locked = o.reserved || (id === 'model' && !m.extra);
+  if (['bool', 'flag', 'enum'].includes(o.kind)) {
+    const sel = document.createElement('select');
+    sel.innerHTML = '<option value="">상속</option>' + (o.kind === 'enum'
+      ? o.choices.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('')
+      : '<option value="true">켜기</option><option value="false">끄기</option>');
+    sel.onchange = () => setDraft(m, id, sel.value === '' ? null : sel.value);
+    sel.disabled = locked; ctl.append(sel);
+  } else {
+    const inp = document.createElement('input'); inp.type = 'text'; inp.spellcheck = false; inp.disabled = locked;
+    if (o.kind === 'number') inp.inputMode = 'decimal';
+    const sugg = o.kind === 'list' ? o.choices : o.suggest;
+    if (sugg?.length) {
+      const dl = document.createElement('datalist'); dl.id = 'dl-' + id;
+      dl.innerHTML = sugg.map(s => `<option value="${esc(s)}">`).join(''); ctl.append(dl); inp.setAttribute('list', dl.id);
+    }
+    inp.oninput = () => setDraft(m, id, inp.value.trim() === '' ? null : inp.value.trim(), true);
+    if (id === 'ctx-size') {
+      const max = m.ctx_train || 262144;
+      const wrap = document.createElement('div'); wrap.className = 'ctxwrap';
+      wrap.innerHTML = `<div class="ctxline"><input type="range" min="0" max="${max}" step="1024"></div><div class="chips"></div>`;
+      const rng = wrap.querySelector('input'); wrap.querySelector('.ctxline').append(inp);
+      rng.oninput = () => { inp.value = rng.value; setDraft(m, id, rng.value, true); };
+      const chips = wrap.querySelector('.chips');
+      for (const [v, l] of [[8192, '8K'], [16384, '16K'], [32768, '32K'], [65536, '64K'], [131072, '128K'], [262144, '256K']]) {
+        if (v > max) continue;
+        const b = document.createElement('button'); b.textContent = l; b.type = 'button';
+        b.onclick = () => { inp.value = v; rng.value = v; setDraft(m, id, String(v), true); }; chips.append(b);
+      }
+      ctl.append(wrap);
+    } else ctl.append(inp);
+  }
+  const err = document.createElement('div'); err.className = 'err'; ctl.append(err);
+  if (locked) row.classList.add('disabled');
+  refreshRow(row, m);
+  return row;
+}
+
+function refreshRow(row, m, fromInput) {
+  const id = row.dataset.id, o = OPT[id];
+  const v = curVal(m, id), saved = savedVal(m, id);
+  const removed = v === '!';
+  const inh = inherited(m, id, removed);
+  const inhTxt = fmtVal(o, inh.v) || '(없음)';
+  const sel = row.querySelector('.ctl select');
+  const inp = row.querySelector('.ctl input[type=text]');
+  const rng = row.querySelector('.ctl input[type=range]');
+  if (sel) {
+    sel.options[0].textContent = `상속: ${inhTxt}`;
+    let sv = v === null || removed ? '' : v;
+    if (sv && (o.kind === 'bool' || o.kind === 'flag')) sv = TRUTHY.includes(sv.toLowerCase()) ? 'true' : 'false';
+    sel.value = sv;
+  }
+  if (inp) {
+    if (!fromInput) inp.value = v === null || removed ? '' : v;
+    inp.placeholder = inhTxt;
+    if (rng) {
+      const eff = inp.value || (/^\d+$/.test(inh.v) ? inh.v : '0');
+      if (document.activeElement !== rng) rng.value = eff;
+      rng.classList.toggle('ghost', !inp.value);
+    }
+  }
+  const dirty = !!DRAFT[m.id]?.has(id);
+  const st = row.querySelector('.st'); st.innerHTML = '';
+  let tag;
+  if (dirty) tag = `<span class="tag dirty" title="저장 전">${removed ? '제거 예정' : v === null ? '지움 예정' : '변경됨'}</span>`;
+  else if (removed) tag = '<span class="tag removed" title="LM Studio 자동 값을 쓰지 않음">자동 값 제거됨</span>';
+  else if (v !== null) tag = '<span class="tag user">내 설정</span>';
+  else tag = `<span class="tag src-${inh.src}">${SRC_KO[inh.src]}</span>`;
+  st.insertAdjacentHTML('beforeend', tag);
+  const locked = o.reserved || (id === 'model' && !m.extra);
+  if (!locked && v !== null) {
+    const b = document.createElement('button'); b.className = 'icon ghost'; b.textContent = '↺';
+    b.title = removed ? '자동 값 되살리기' : '내 설정 지우기 (상속 값으로)';
+    b.onclick = () => setDraft(m, id, null); st.append(b);
+  } else if (!locked && v === null && m.auto[id] && !m.extra) {
+    const b = document.createElement('button'); b.className = 'icon ghost'; b.textContent = '✕';
+    b.title = `LM Studio 자동 값(${m.auto[id].value}) 제거 - 공통값/기본값을 씀`;
+    b.onclick = () => setDraft(m, id, '!'); st.append(b);
+  }
+  const e = validate(o, v);
+  row.classList.toggle('invalid', !!e);
+  row.querySelector('.ctl .err').textContent = e;
+  row.classList.toggle('set', v !== null && !dirty);
+  row.classList.toggle('dirty', dirty);
+}
+
+function applyFilter() {
+  const q = $('#q').value.trim().toLowerCase();
+  const only = $('#onlySet').checked;
+  const m = model(CUR);
+  for (const g of $$('#detail .group')) {
+    let visible = 0;
+    for (const r of $$('.row[data-id]', g)) {
+      const id = r.dataset.id;
+      const has = curVal(m, id) !== null || m.auto[id] || S.global[id];
+      r.hidden = (q && !r.dataset.hay.includes(q)) || (only && !has);
+      if (!r.hidden) visible++;
+    }
+    if ($$('.row[data-id]', g).length) g.hidden = !visible;
+  }
+  if (q || only) $('#allopts').open = true;
+}
+
+function updateSaveBar() {
+  const m = model(CUR); const bar = $('#saveBar'); if (!m || !bar) return;
+  const d = DRAFT[m.id];
+  bar.hidden = !d?.size;
+  if (!d?.size) return;
+  const errs = draftErrors(m);
+  $('#sbText').innerHTML = `저장 안 된 변경 ${d.size}개` + (errs.length ? `<small style="color:var(--err)">입력 오류 ${errs.length}개</small>` : '<small>Ctrl+S</small>');
+  $('#sbSave').disabled = !!errs.length;
+}
+
+async function save() {
+  const m = model(CUR); const d = DRAFT[m?.id];
+  if (!d?.size) return;
+  if (draftErrors(m).length) return toast('입력 오류를 먼저 고쳐 주세요', 'err');
+  const st = statusOf(m.id);
+  const items = [...d].map(([id, v]) => `<li><code>--${esc(id)}</code> → ${v === null ? '<i>내 설정 지움 (상속)</i>' : v === '!' ? '<i>자동 값 제거</i>' : `<b>${esc(v)}</b>`}</li>`).join('');
+  let html = `<ul>${items}</ul>`;
+  if (isRunning(st)) html += `<p class="warnp">⚠️ 이 모델은 지금 <b>${esc(STATUS_KO[st])}</b> 상태예요. 적용하면 <b>언로드</b>되고, 다음 요청 때 새 설정으로 다시 로드돼요.</p>`;
+  if (st === 'off') html += '<p class="muted">라우터가 꺼져 있어서 파일에만 저장돼요. 다음에 라우터를 켤 때 적용돼요.</p>';
+  if (!await confirmBox('저장하고 적용할까요?', html, '저장하고 적용')) return;
+  busy('저장 → LM Studio 동기화 → 라우터 reload 중…');
+  try {
+    const r = await api('/api/model/save', { id: m.id, changes: Object.fromEntries(d) });
+    delete DRAFT[m.id];
+    busy(false);
+    if (!r.changed) toast('파일 내용이 그대로예요 (바뀐 게 없음)');
+    else toast((r.reloaded ? '저장하고 라우터에 적용했어요' : '저장했어요 (라우터 꺼짐 - 다음 시작 때 적용)')
+      + (r.unloaded?.length ? `\n언로드됨: ${r.unloaded.join(', ')}` : ''), 'ok', 6000);
+    if (r.reload_error) toast('라우터 reload 실패: ' + r.reload_error, 'err', 9000);
+    await loadState(true);
+    pollLive();
+  } catch (e) { busy(false); toast(e.message, 'err', 10000); }
+}
+
+// ------------------------------------------------------------------ live (라우터 상태 / VRAM)
+async function pollLive() {
+  try { LIVE = await api('/api/live'); } catch { LIVE = null; }
+  renderLive();
+}
+function renderLive() {
+  const up = !!LIVE?.router?.models;
+  const port = LIVE?.router?.port || 8080;
+  const pill = $('#routerPill');
+  if (!LIVE) { pill.className = 'pill down'; pill.textContent = '설정 서버 연결 끊김'; }
+  else if (up) {
+    const loaded = Object.entries(LIVE.router.models).filter(([, x]) => x.status === 'loaded' || x.status === 'loading');
+    pill.className = 'pill up'; pill.textContent = `라우터 :${port}` + (loaded.length ? ` · ${loaded.length}개 로드됨` : ' · 로드된 모델 없음');
+  } else { pill.className = 'pill down'; pill.textContent = `라우터 꺼짐 :${port}`; }
+  $('#webuiLink').href = `http://127.0.0.1:${port}/`;
+  const v = LIVE?.vram;
+  if (v) {
+    const p = v.used_mb / v.total_mb;
+    $('#vram i').style.width = (p * 100).toFixed(1) + '%';
+    $('#vram span').textContent = `VRAM ${(v.used_mb / 1024).toFixed(1)} / ${(v.total_mb / 1024).toFixed(1)} GB`;
+    $('#vram').classList.toggle('hot', p > .9); $('#vram').title = v.name;
+  }
+  if (S) { renderList(); renderLiveDetail(); }
+  if (!$('#tab-router').hidden) renderRouterStatus();
+}
+function renderLiveDetail() {
+  const m = model(CUR); if (!m || !$('#dStatus')) return;
+  const st = statusOf(m.id); const x = LIVE?.router?.models?.[m.id];
+  const lab = $('#dStatus'); lab.className = 'st-label s-' + st;
+  lab.textContent = (STATUS_KO[st] || st) + (st === 'failed' && x?.exit_code != null ? ` (exit ${x.exit_code})` : '');
+  const b = $('#dLoad'); b.disabled = st === 'off' || st === 'unknown';
+  b.textContent = isRunning(st) ? '언로드' : '로드';
+  b.className = isRunning(st) ? '' : 'primary';
+  const args = x?.args?.length ? x.args.map(a => /\s/.test(a) ? `"${a}"` : a).join(' ') : (st === 'off' ? '(라우터가 꺼져 있음)' : '(라우터 목록에 없음 - 저장 후 reload 되면 보여요)');
+  const pre = $('#dArgs'); if (pre.textContent !== args) pre.textContent = args;
+}
+
+// ------------------------------------------------------------------ 라우터 탭
+let RINFO = null;
+async function loadRouterInfo() {
+  try { RINFO = await api('/api/router/info'); } catch (e) { RINFO = { error: e.message }; }
+  renderRouterStatus();
+}
+function renderRouterStatus() {
+  const el = $('#rInfo'); const up = !!LIVE?.router?.models;
+  $('#rStart').disabled = up; $('#rStop').disabled = !up; $('#rRestart').disabled = !up;
+  if (!RINFO) { el.textContent = '확인 중…'; return; }
+  if (RINFO.error) { el.textContent = RINFO.error; return; }
+  const p = RINFO.process;
+  if (!up) { el.innerHTML = `<span class="pill down">꺼짐</span> <span class="muted">시작을 누르면 'llama.cpp router' 창이 열려요.</span>`; return; }
+  const loaded = Object.entries(LIVE.router.models).filter(([, x]) => isRunning(x.status)).map(([id, x]) => `${id} (${STATUS_KO[x.status]})`);
+  let html = `<div class="kv"><div>상태</div><div><span class="pill up">실행 중 :${LIVE.router.port}</span></div>
+    <div>로드된 모델</div><div>${loaded.length ? loaded.map(esc).join('<br>') : '<span class="muted">없음</span>'}</div>`;
+  if (p) html += `<div>프로세스</div><div>llama-server PID ${p.pid} · 창 ${esc(p.root_name)} PID ${p.root_pid}</div>
+    <div>실행 명령</div><div><pre class="mono">${esc(p.cmdline)}</pre></div>`;
+  html += '</div>';
+  if (p) {
+    const saved = currentRouterForm();
+    const diffs = ['Port', 'ModelsMax', 'Build', 'McpMode'].filter(k => String(saved[k]) !== String(p.running[k]));
+    if (diffs.length) html += `<div class="mismatch">저장된 옵션과 실행 중인 값이 달라요 (${diffs.join(', ')}) → 재시작하면 적용돼요.</div>`;
+  } else html += '<div class="mismatch">라우터 프로세스를 못 찾았어요 (start-router 로 띄운 게 아닌 듯). 중지/재시작은 직접 해 주세요.</div>';
+  el.innerHTML = html;
+}
+function renderRouterForm() {
+  const f = $('#rForm'); const saved = S.router_options || {};
+  f.innerHTML = '';
+  for (const fd of S.router_fields) {
+    const val = fd.name in saved ? saved[fd.name] : fd.default;
+    const row = document.createElement('div'); row.className = 'row';
+    let ctl;
+    if (fd.type === 'enum') ctl = `<select data-f="${fd.name}">${fd.choices.map(c => `<option ${c === val ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>`;
+    else if (fd.type === 'bool') ctl = `<label class="chk"><input type="checkbox" data-f="${fd.name}" ${val ? 'checked' : ''}> 켜기</label>`;
+    else ctl = `<input type="number" data-f="${fd.name}" value="${esc(val)}" min="${fd.min}" max="${fd.max}">`;
+    row.innerHTML = `<div class="lab"><div class="lt"><span class="nm">${esc(fd.label)}</span><code>-${esc(fd.name)}</code></div>
+      <div class="ds">${esc(fd.help)} · 기본 ${esc(String(fd.default))}</div></div><div class="ctl">${ctl}</div>`;
+    f.append(row);
+  }
+  const p = S.paths;
+  $('#rFiles').innerHTML = `<div>내 설정</div><div class="mono">${esc(p.override)}</div><div>자동 생성</div><div class="mono">${esc(p.models_ini)}</div>
+    <div>라우터 옵션</div><div class="mono">${esc(p.root)}\\router-options.json</div>`;
+}
+function currentRouterForm() {
+  const out = {};
+  for (const fd of S.router_fields) {
+    const el = $(`#rForm [data-f="${fd.name}"]`); if (!el) continue;
+    out[fd.name] = fd.type === 'bool' ? el.checked : fd.type === 'int' ? Number(el.value) : el.value;
+  }
+  return out;
+}
+function loadedList() {
+  return Object.entries(LIVE?.router?.models || {}).filter(([, x]) => isRunning(x.status)).map(([id]) => id);
+}
+$('#rSave').onclick = async () => {
+  try {
+    const r = await api('/api/router/options', { options: currentRouterForm() });
+    S.router_options = r.options; toast('라우터 옵션을 저장했어요. 재시작하면 적용돼요.', 'ok'); loadRouterInfo();
+  } catch (e) { toast(e.message, 'err', 8000); }
+};
+async function routerAction(act) {
+  const ld = loadedList();
+  if (act !== 'start') {
+    const html = (ld.length ? `<p class="warnp">로드된 모델이 내려가요: <b>${ld.map(esc).join(', ')}</b><br>ComfyUI 등에서 쓰는 중이면 요청이 끊겨요.</p>` : '')
+      + `<p class="muted">'llama.cpp router' 창과 MCP 게이트웨이, 모델 감시가 같이 종료${act === 'restart' ? '되고 새 창으로 다시 시작돼요' : '돼요'}.</p>`;
+    if (!await confirmBox(act === 'restart' ? '라우터를 재시작할까요?' : '라우터를 중지할까요?', html, act === 'restart' ? '재시작' : '중지', act === 'restart' ? 'primary' : 'danger')) return;
+  }
+  busy(act === 'stop' ? '라우터 중지 중…' : act === 'start' ? '라우터 시작 요청 중…' : '라우터 재시작 중…');
+  try {
+    await api('/api/router/' + act, {});
+    busy(false);
+    if (act === 'stop') toast('라우터를 중지했어요', 'ok');
+    else {
+      toast("라우터를 시작했어요 - 'llama.cpp router' 창에서 진행 상황이 보여요", 'ok', 6000);
+      waitRouterUp();
+    }
+  } catch (e) { busy(false); toast(e.message, 'err', 9000); }
+  pollLive(); loadRouterInfo();
+}
+async function waitRouterUp() {
+  for (let i = 0; i < 90; i++) {
+    await new Promise(r => setTimeout(r, 2000));
+    await pollLive();
+    if (LIVE?.router?.models) { toast('라우터가 준비됐어요', 'ok'); await loadState(true); loadRouterInfo(); return; }
+  }
+  toast("라우터가 3분 안에 응답하지 않았어요 - 'llama.cpp router' 창을 확인하세요", 'err', 10000);
+}
+$('#rStart').onclick = () => routerAction('start');
+$('#rStop').onclick = () => routerAction('stop');
+$('#rRestart').onclick = () => routerAction('restart');
+
+// ------------------------------------------------------------------ 시작
+for (const b of $$('.tabs button')) b.onclick = () => {
+  $$('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+  $('#tab-models').hidden = b.dataset.tab !== 'models';
+  $('#tab-router').hidden = b.dataset.tab !== 'router';
+  if (b.dataset.tab === 'router') { renderRouterStatus(); loadRouterInfo(); }
+};
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); if (!$('#tab-models').hidden) save(); }
+  if (e.key === 'Escape' && !$('#modal').hidden && $('#mFoot').children.length) $('#mFoot').firstChild.click();
+});
+window.addEventListener('beforeunload', e => { if (Object.keys(DRAFT).length) { e.preventDefault(); e.returnValue = ''; } });
+
+async function loadState(keepScroll) {
+  const top = $('#detail').scrollTop; const q = $('#q')?.value, only = $('#onlySet')?.checked, open = $('#allopts')?.open;
+  S = await api('/api/state');
+  OPT = {}; ALIAS = {};
+  for (const o of S.options) { OPT[o.id] = o; for (const n of [...o.names, ...o.neg]) ALIAS[n] ??= o.id; }
+  if (!CUR || !model(CUR)) CUR = S.models[0]?.id;
+  renderList(); renderDetail(); renderRouterForm();
+  if (keepScroll) {
+    if (q) $('#q').value = q; if (only) $('#onlySet').checked = true; if (open) $('#allopts').open = true;
+    if (q || only) applyFilter();
+    $('#detail').scrollTop = top;
+  }
+}
+(async () => {
+  pollLive();
+  try { await loadState(); }
+  catch (e) { $('#detail').innerHTML = `<div class="empty">불러오기 실패: ${esc(e.message)}</div>`; }
+  setInterval(pollLive, 2500);
+})();
+</script>
+</body>
+</html>
