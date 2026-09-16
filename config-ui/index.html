@@ -290,9 +290,16 @@ const CURATED = [
 ];
 
 // ------------------------------------------------------------------ util
+const SERVER_URL = 'http://127.0.0.1:8092/';
 async function api(path, body) {
   const init = body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
-  const r = await fetch(path, init);
+  let r;
+  try { r = await fetch(path, init); }
+  catch (e) {
+    throw new Error(location.protocol === 'file:'
+      ? `파일로 직접 열면 동작하지 않아요. 바탕화면 'llama.cpp 설정'(config-ui.bat)으로 ${SERVER_URL} 을 여세요.`
+      : `설정 서버(${location.host})에 연결하지 못했어요 - 서버가 꺼졌을 수 있어요. 바탕화면 'llama.cpp 설정'(config-ui.bat)을 다시 실행하세요. (${e.message})`);
+  }
   const d = await r.json().catch(() => ({ error: r.status + ' ' + r.statusText }));
   if (!r.ok) throw new Error(d.error || r.statusText);
   return d;
@@ -776,6 +783,14 @@ async function loadState(keepScroll) {
   }
 }
 (async () => {
+  if (location.protocol === 'file:') {
+    $('#modelList').innerHTML = '';
+    $('#detail').innerHTML = `<div class="empty"><b>index.html 을 파일로 직접 열었어요.</b><br><br>
+      이 화면은 설정 서버를 통해서만 동작해요. 바탕화면 <b>'llama.cpp 설정'</b>(C:\\AI\\llama.cpp\\config-ui.bat)을 실행하거나<br>
+      서버가 이미 켜져 있으면 <a href="${SERVER_URL}">${SERVER_URL}</a> 로 여세요.</div>`;
+    $('#routerPill').className = 'pill down'; $('#routerPill').textContent = '파일로 열림 - 서버 주소로 여세요';
+    return;
+  }
   pollLive();
   try { await loadState(); }
   catch (e) { $('#detail').innerHTML = `<div class="empty">불러오기 실패: ${esc(e.message)}</div>`; }

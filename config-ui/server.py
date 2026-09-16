@@ -709,6 +709,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         path = self.path.split("?", 1)[0]
         try:
             if path in ("/", "/index.html"):
+                log(f"GET {path}  host={self.headers.get('Host')}")
                 return self._send(200, open(os.path.join(HERE, "index.html"), "rb").read(), "text/html; charset=utf-8")
             if path == "/api/ping":
                 return self._send(200, {"app": APP_ID})
@@ -733,17 +734,25 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return self._send(500, {"error": f"{type(e).__name__}: {e}"})
 
     def do_POST(self):
-        if not self._host_ok():
-            return self._send(403, {"error": "forbidden host"})
+        path = self.path.split("?", 1)[0]
         origin = self.headers.get("Origin")
+        log(f"POST {path}  host={self.headers.get('Host')} origin={origin}")
+        try:  # 거절할 때도 본문을 먼저 읽음 (안 읽고 닫으면 Windows 가 RST 를 보내 브라우저엔 'Failed to fetch' 로만 보임)
+            n = int(self.headers.get("Content-Length") or 0)
+            raw = self.rfile.read(n) if n else b""
+        except (ValueError, OSError):
+            raw = b""
+        if not self._host_ok():
+            log(f"  rejected: host")
+            return self._send(403, {"error": "forbidden host"})
         if origin and origin not in (f"http://127.0.0.1:{PORT}", f"http://localhost:{PORT}"):
+            log(f"  rejected: origin")
             return self._send(403, {"error": "forbidden origin"})
         if not (self.headers.get("Content-Type") or "").startswith("application/json"):
+            log(f"  rejected: content-type {self.headers.get('Content-Type')}")
             return self._send(415, {"error": "application/json 필요"})
-        path = self.path.split("?", 1)[0]
         try:
-            n = int(self.headers.get("Content-Length") or 0)
-            body = json.loads(self.rfile.read(n).decode("utf-8") or "{}") if n else {}
+            body = json.loads(raw.decode("utf-8") or "{}")
             if path == "/api/model/save":
                 return self._send(200, save_model(body.get("id"), body.get("changes")))
             if path in ("/api/model/load", "/api/model/unload"):
