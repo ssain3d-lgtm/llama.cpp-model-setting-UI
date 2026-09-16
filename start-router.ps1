@@ -68,10 +68,21 @@ if (-not $NoSync) {
     if ($LASTEXITCODE -ne 0) { Write-Host "[sync] 실패 - 기존 파일로 계속" -ForegroundColor Yellow }
 }
 
-$exe = if ($Build -eq "fastmtp" -and (Test-Path "C:\AI\llama.cpp-fastmtp\llama-server.exe")) {
-    "C:\AI\llama.cpp-fastmtp\llama-server.exe"
+$fastmtpExe = Join-Path (Split-Path $PSScriptRoot -Parent) "llama.cpp-fastmtp\llama-server.exe"  # 옆 폴더의 패치 빌드
+$exe = if ($Build -eq "fastmtp" -and (Test-Path $fastmtpExe)) {
+    $fastmtpExe
 } else {
     "$PSScriptRoot\llama-server.exe"
+}
+
+# MCP 설정이 없으면(LM Studio 미사용 등) MCP 끔. 없는 파일을 --ui-config-file / --mcp-servers-config 로 넘기면 llama-server 가 시작하자마자 종료됨
+$needMcp = @()
+if ($McpMode -eq "browser") { $needMcp = @("mcp.json", "ui-config.json") }
+elseif ($McpMode -eq "server") { $needMcp = @("mcp.json") }
+$missingMcp = @($needMcp | Where-Object { -not (Test-Path (Join-Path $PSScriptRoot $_)) })
+if ($missingMcp.Count -gt 0) {
+    Write-Host "[mcp] $($missingMcp -join ', ') 없음 (LM Studio MCP 설정 없음) -> MCP 끔" -ForegroundColor Yellow
+    $McpMode = "off"
 }
 
 $llamaArgs = @(

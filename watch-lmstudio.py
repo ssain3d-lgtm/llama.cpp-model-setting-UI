@@ -7,8 +7,8 @@ LM Studio 모델 폴더를 주기적으로 확인해서 모델이 추가/삭제/
   2) 내용이 실제로 바뀌었으면 http://127.0.0.1:<port>/models?reload=1 로 라우터에 반영 (재시작 불필요)
 라우터 reload 동작: 실행 중인 모델은 프리셋이 바뀌었거나 사라졌을 때만 언로드, 나머지는 그대로 유지.
 
-감시 대상: models 폴더(+ settings.json downloadsFolder)의 *.gguf 크기/수정시각,
-          LM Studio 모델 인덱스(model-index-cache.json), 모델별 로드 설정, settings.json, models.override.ini
+감시 대상: LM Studio models 폴더(+ settings.json downloadsFolder) + model-folders.json 의 폴더에 있는 *.gguf 크기/수정시각,
+          LM Studio 모델 인덱스(model-index-cache.json), 모델별 로드 설정, settings.json, models.override.ini, model-folders.json
 다운로드 중인 파일은 두 주기 연속 변화가 없고 마지막 수정 후 --settle 초가 지나야 반영.
 --parent-pid 로 준 프로세스(start-router.ps1)가 죽으면 같이 종료.
 """
@@ -40,15 +40,28 @@ def lm_home():
     return os.path.expanduser("~/.lmstudio")
 
 
-def model_roots(lm):
-    roots = [os.path.join(lm, "models")]
+def load_folders():
+    """model-folders.json (sync-lmstudio.py 와 같은 형식) -> (LM Studio 포함 여부, [모델 폴더])"""
     try:
-        dl = json.load(open(os.path.join(lm, "settings.json"), encoding="utf-8")).get("downloadsFolder")
+        d = json.load(open(os.path.join(HERE, "model-folders.json"), encoding="utf-8-sig"))
     except Exception:
-        dl = None
-    if dl and os.path.isdir(dl) and not os.path.normcase(os.path.abspath(dl)).startswith(os.path.normcase(os.path.abspath(roots[0]))):
-        roots.append(dl)
-    return roots
+        return True, []
+    folders = [os.path.abspath(os.path.expanduser(f)) for f in d.get("folders", []) if isinstance(f, str) and f.strip()]
+    return d.get("lmstudio", True) is not False, folders
+
+
+def model_roots(lm):
+    use_lm, folders = load_folders()
+    roots = []
+    if use_lm:
+        roots.append(os.path.join(lm, "models"))
+        try:
+            dl = json.load(open(os.path.join(lm, "settings.json"), encoding="utf-8")).get("downloadsFolder")
+        except Exception:
+            dl = None
+        if dl and os.path.isdir(dl) and not os.path.normcase(os.path.abspath(dl)).startswith(os.path.normcase(os.path.abspath(roots[0]))):
+            roots.append(dl)
+    return roots + [f for f in folders if os.path.isdir(f)]
 
 
 def fingerprint():
@@ -73,7 +86,8 @@ def fingerprint():
                     add(os.path.join(dp, f), True)
     for p in (os.path.join(lm, "settings.json"),
               os.path.join(lm, ".internal", "model-index-cache.json"),
-              os.path.join(HERE, "models.override.ini")):
+              os.path.join(HERE, "models.override.ini"),
+              os.path.join(HERE, "model-folders.json")):
         add(p, False)
     for dp, _, fn in os.walk(os.path.join(lm, ".internal", "user-concrete-model-default-config")):
         for f in fn:

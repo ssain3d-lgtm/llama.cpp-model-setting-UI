@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>llama.cpp 설정</title>
+<title>llama.cpp Settings</title>
 <style>
 :root {
   --bg: #f4f5f7; --panel: #ffffff; --panel2: #f9fafb; --line: #e3e6eb; --line2: #eef0f3;
@@ -27,6 +27,7 @@ body { margin: 0; background: var(--bg); color: var(--text);
   font: 14px/1.45 "Segoe UI", "Malgun Gothic", system-ui, sans-serif; display: flex; flex-direction: column; }
 [hidden] { display: none !important; }
 code, pre, .mono { font-family: "Cascadia Mono", Consolas, "D2Coding", monospace; font-size: 12.5px; }
+a { color: var(--accent); }
 button { font: inherit; color: inherit; background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
   padding: 5px 12px; cursor: pointer; white-space: nowrap; }
 button:hover:not(:disabled) { border-color: var(--faint); }
@@ -43,25 +44,28 @@ input::placeholder { color: var(--faint); }
 /* header */
 .top { display: flex; align-items: center; gap: 14px; padding: 0 18px; height: 52px; background: var(--panel);
   border-bottom: 1px solid var(--line); flex: none; }
-.brand { font-weight: 650; font-size: 15px; letter-spacing: -.01em; }
+.brand { font-weight: 650; font-size: 15px; letter-spacing: -.01em; white-space: nowrap; }
 .tabs { display: flex; gap: 2px; margin-left: 8px; }
 .tabs button { border: none; background: none; padding: 6px 12px; color: var(--muted); border-radius: 6px; }
 .tabs button.on { color: var(--text); background: var(--line2); font-weight: 600; }
 .spacer { flex: 1; }
 .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 99px; font-size: 12.5px;
-  background: var(--line2); color: var(--muted); }
+  background: var(--line2); color: var(--muted); white-space: nowrap; }
 .pill.up { background: var(--ok-bg); color: var(--ok); }
 .pill.down { background: var(--err-bg); color: var(--err); }
-.vram { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.vram { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); white-space: nowrap; }
 .vram .bar { width: 120px; height: 7px; border-radius: 9px; background: var(--line2); overflow: hidden; }
 .vram .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .4s; }
 .vram.hot .bar i { background: var(--err); }
-.top a { color: var(--accent); text-decoration: none; font-size: 13px; }
+.top a { text-decoration: none; font-size: 13px; white-space: nowrap; }
+.top select { padding: 3px 6px; font-size: 12.5px; }
 
 /* models layout */
 .models { flex: 1; display: grid; grid-template-columns: 310px 1fr; min-height: 0; }
 .list { border-right: 1px solid var(--line); overflow: auto; background: var(--panel2); padding: 10px 8px; }
-.list h4 { margin: 4px 8px 8px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.listhead { display: flex; justify-content: space-between; align-items: center; margin: 2px 8px 8px; }
+.listhead h4 { margin: 0; font-size: 12px; color: var(--muted); font-weight: 600; }
+.listhead button { padding: 3px 10px; font-size: 12.5px; }
 .mi { display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: start; padding: 9px 10px; border-radius: var(--radius);
   cursor: pointer; border: 1px solid transparent; }
 .mi:hover { background: var(--line2); }
@@ -88,7 +92,7 @@ input::placeholder { color: var(--faint); }
 .dmeta { color: var(--muted); font-size: 12.5px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
 .dmeta code { color: var(--text); background: var(--line2); padding: 0 5px; border-radius: 4px; }
 .dact { display: flex; gap: 8px; align-items: center; }
-.st-label { font-size: 12.5px; padding: 3px 10px; border-radius: 99px; background: var(--line2); color: var(--muted); }
+.st-label { font-size: 12.5px; padding: 3px 10px; border-radius: 99px; background: var(--line2); color: var(--muted); white-space: nowrap; }
 .st-label.s-loaded { background: var(--ok-bg); color: var(--ok); }
 .st-label.s-loading { background: var(--warn-bg); color: var(--warn); }
 .st-label.s-sleeping { color: var(--sleep); }
@@ -104,7 +108,7 @@ input::placeholder { color: var(--faint); }
 .chk { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); font-size: 13px; cursor: pointer; user-select: none; }
 
 .group { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; margin: 12px 0; box-shadow: var(--shadow); }
-.group > h3 { margin: 0; padding: 11px 16px 9px; font-size: 13.5px; border-bottom: 1px solid var(--line2); display: flex; gap: 10px; align-items: baseline; }
+.group > h3 { margin: 0; padding: 11px 16px 9px; font-size: 13.5px; border-bottom: 1px solid var(--line2); display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
 .group > h3 small { font-weight: 400; color: var(--muted); font-size: 12px; }
 .row { display: grid; grid-template-columns: minmax(230px, 1.15fr) minmax(210px, 1fr) 150px; gap: 14px; align-items: center;
   padding: 9px 16px; border-top: 1px solid var(--line2); }
@@ -118,6 +122,7 @@ input::placeholder { color: var(--faint); }
 .row .ctl { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; min-width: 0; }
 .row .ctl > input[type=text], .row .ctl > select { flex: 1; min-width: 120px; }
 .row .ctl .err { flex-basis: 100%; color: var(--err); font-size: 11.5px; }
+.row .ctl .err:empty { display: none; }
 .row .st { display: flex; gap: 4px; align-items: center; justify-content: flex-end; }
 .row.set { background: linear-gradient(90deg, var(--accent-bg), transparent 55%); }
 .row.dirty { background: linear-gradient(90deg, var(--warn-bg), transparent 55%); }
@@ -141,36 +146,46 @@ details.all > summary::before { content: "▸"; color: var(--muted); transition:
 details.all[open] > summary::before { transform: rotate(90deg); }
 details.all > summary small { color: var(--muted); font-weight: 400; }
 .unknown { font-size: 12.5px; }
-.empty { color: var(--muted); padding: 40px; text-align: center; }
+.empty { color: var(--muted); padding: 40px; text-align: center; line-height: 1.7; }
+.empty button { margin-top: 12px; }
 
 .savebar { position: sticky; bottom: 14px; z-index: 5; margin: 18px auto 0; max-width: 640px; display: flex; gap: 10px; align-items: center;
   background: var(--panel); border: 1px solid var(--warn); border-radius: 10px; padding: 9px 12px 9px 16px; box-shadow: var(--shadow); }
 .savebar .sbt { flex: 1; font-weight: 600; }
 .savebar .sbt small { font-weight: 400; color: var(--muted); margin-left: 6px; }
 
-/* router tab */
-.router { flex: 1; overflow: auto; }
+/* folders / router tabs */
+.page { flex: 1; overflow: auto; }
 .rwrap { max-width: 860px; margin: 0 auto; padding: 20px 24px 60px; }
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); margin-bottom: 16px; }
 .card-h { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line2); flex-wrap: wrap; }
 .card-h h3 { margin: 0; font-size: 14px; }
 .card-b { padding: 12px 16px; }
 .card .btns { display: flex; gap: 8px; }
-.kv { display: grid; grid-template-columns: 120px 1fr; gap: 6px 12px; font-size: 13px; }
+.kv { display: grid; grid-template-columns: 130px 1fr; gap: 6px 12px; font-size: 13px; }
 .kv > div:nth-child(odd) { color: var(--muted); }
 .kv pre { margin: 0; white-space: pre-wrap; word-break: break-all; }
 .rform .row { grid-template-columns: minmax(230px, 1.2fr) minmax(160px, 1fr); }
 .mismatch { margin-top: 10px; padding: 8px 12px; border-radius: var(--radius); background: var(--warn-bg); color: var(--warn); font-size: 12.5px; }
 .muted { color: var(--muted); font-size: 12.5px; }
+.frow { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; padding: 10px 16px; border-top: 1px solid var(--line2); }
+.frow .fp { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12.5px; word-break: break-all; }
+.frow .fs { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.frow .fs.bad { color: var(--err); }
+.fadd { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--line2); }
+.fadd input { flex: 1; }
 
 /* modal / toast */
 .modal { position: fixed; inset: 0; background: rgba(10,12,16,.45); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
-.modal .box { background: var(--panel); border-radius: 12px; max-width: 560px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,.3); }
+.modal .box { background: var(--panel); border-radius: 12px; max-width: 580px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,.3); }
 .modal h3 { margin: 0; padding: 16px 18px 6px; font-size: 15px; }
-.modal .mb2 { padding: 4px 18px 8px; max-height: 60vh; overflow: auto; font-size: 13.5px; }
+.modal .mb2 { padding: 4px 18px 8px; max-height: 64vh; overflow: auto; font-size: 13.5px; }
 .modal .mb2 ul { padding-left: 18px; margin: 6px 0; }
 .modal .mb2 li { margin: 2px 0; word-break: break-all; }
 .modal .mb2 .warnp { background: var(--warn-bg); color: var(--warn); padding: 8px 10px; border-radius: 6px; }
+.modal .mb2 label { display: block; font-weight: 600; margin: 10px 0 4px; font-size: 13px; }
+.modal .mb2 input[type=text] { width: 100%; }
+.modal .mb2 .hint { color: var(--muted); font-size: 12.5px; margin-top: 10px; line-height: 1.6; }
 .modal .mf { display: flex; justify-content: flex-end; gap: 8px; padding: 10px 18px 16px; }
 .spin { width: 18px; height: 18px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: rot .8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
 @keyframes rot { to { transform: rotate(360deg); } }
@@ -181,46 +196,72 @@ details.all > summary small { color: var(--muted); font-weight: 400; }
 .toast.err { border-left-color: var(--err); }
 
 @media (max-width: 900px) {
+  .top { flex-wrap: wrap; height: auto; padding: 8px 12px; gap: 8px; }
   .models { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
   .list { max-height: 34vh; border-right: none; border-bottom: 1px solid var(--line); }
   .row, .rform .row { grid-template-columns: 1fr; gap: 6px; }
   .row .st { justify-content: flex-start; }
   .vram .bar { width: 60px; }
+  .frow { grid-template-columns: 1fr; }
 }
 </style>
 </head>
 <body>
 <header class="top">
-  <div class="brand">llama.cpp 설정</div>
-  <nav class="tabs"><button data-tab="models" class="on">모델</button><button data-tab="router">라우터</button></nav>
+  <div class="brand" data-i18n="brand"></div>
+  <nav class="tabs">
+    <button data-tab="models" class="on" data-i18n="tab.models"></button>
+    <button data-tab="folders" data-i18n="tab.folders"></button>
+    <button data-tab="router" data-i18n="tab.router"></button>
+  </nav>
   <div class="spacer"></div>
-  <span id="routerPill" class="pill">라우터 확인 중…</span>
-  <div class="vram" id="vram" title="GPU 메모리"><div class="bar"><i></i></div><span>VRAM -</span></div>
+  <span id="routerPill" class="pill"></span>
+  <div class="vram" id="vram"><div class="bar"><i></i></div><span>VRAM -</span></div>
   <a id="webuiLink" href="#" target="_blank" rel="noopener">WebUI ↗</a>
+  <select id="langSel" title="Language"><option value="ko">한국어</option><option value="en">English</option></select>
 </header>
 
 <main class="models" id="tab-models">
-  <aside class="list" id="modelList"><div class="empty">불러오는 중…</div></aside>
+  <aside class="list" id="modelList"></aside>
   <section class="detail" id="detail"></section>
 </main>
 
-<main class="router" id="tab-router" hidden>
+<main class="page" id="tab-folders" hidden>
   <div class="rwrap">
     <section class="card">
-      <div class="card-h"><h3>라우터 상태</h3>
-        <div class="btns"><button id="rStart">시작</button><button id="rStop" class="danger">중지</button><button id="rRestart" class="primary">재시작</button></div>
+      <div class="card-h"><h3 data-i18n="folders.title"></h3></div>
+      <div class="card-b"><p class="muted" style="margin:0" data-i18n="folders.desc"></p></div>
+      <div class="frow">
+        <div><label class="chk" style="color:var(--text)"><input type="checkbox" id="fLm"> <b>LM Studio</b></label>
+          <div class="fs" id="fLmStatus"></div></div>
+        <span class="badge" id="fLmCount"></span><span></span>
       </div>
-      <div class="card-b" id="rInfo">확인 중…</div>
+      <div id="fList"></div>
+      <div class="fadd"><input type="text" id="fPath" spellcheck="false" data-i18n-ph="folders.addPh">
+        <button class="primary" id="fAdd" data-i18n="folders.add"></button></div>
     </section>
     <section class="card">
-      <div class="card-h"><h3>실행 옵션 <small class="muted">start-router.ps1</small></h3><button id="rSave" class="primary">저장</button></div>
-      <div class="card-b">
-        <p class="muted" style="margin:0 0 6px">저장한 뒤 <b>재시작</b>해야 적용돼요. 바탕화면 'llama.cpp WebUI' 바로가기로 라우터를 켤 때도 이 값을 써요.</p>
+      <div class="card-h"><h3 data-i18n="folders.manualTitle"></h3><button id="fAddModel" data-i18n="btn.addModel"></button></div>
+      <div class="card-b"><p class="muted" style="margin:0" id="fManual"></p></div>
+    </section>
+  </div>
+</main>
+
+<main class="page" id="tab-router" hidden>
+  <div class="rwrap">
+    <section class="card">
+      <div class="card-h"><h3 data-i18n="router.status"></h3>
+        <div class="btns"><button id="rStart" data-i18n="router.start"></button><button id="rStop" class="danger" data-i18n="router.stop"></button><button id="rRestart" class="primary" data-i18n="router.restart"></button></div>
       </div>
+      <div class="card-b" id="rInfo"></div>
+    </section>
+    <section class="card">
+      <div class="card-h"><h3><span data-i18n="router.options"></span> <small class="muted">start-router.ps1</small></h3><button id="rSave" class="primary" data-i18n="router.save"></button></div>
+      <div class="card-b"><p class="muted" style="margin:0 0 6px" data-i18n="router.optionsHint"></p></div>
       <div class="rform" id="rForm"></div>
     </section>
     <section class="card">
-      <div class="card-h"><h3>파일</h3></div>
+      <div class="card-h"><h3 data-i18n="files.title"></h3></div>
       <div class="card-b kv" id="rFiles"></div>
     </section>
   </div>
@@ -235,98 +276,288 @@ const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-let S = null, LIVE = null, CUR = null, OPT = {}, ALIAS = {};
-const DRAFT = {};            // 모델 id -> Map(옵션 id -> 값 | null(내 설정 지움) | '!'(자동 값 제거))
-const TRUTHY = ['on', 'enabled', 'true', '1'];
-const STATUS_KO = { loaded: '로드됨', loading: '로딩 중', unloaded: '언로드됨', sleeping: '슬립 (VRAM 해제됨)',
-  downloading: '다운로드 중', downloaded: '다운로드됨', failed: '로드 실패', unknown: '알 수 없음', off: '라우터 꺼짐' };
-const SRC_KO = { auto: 'LM Studio 자동', global: '공통 [*]', default: 'llama.cpp 기본값' };
-const GROUP_ORDER = ['공통', '샘플링', '추측 디코딩', '서버', '라우터 전용'];
+// ------------------------------------------------------------------ i18n
+const I18N = {
+  ko: {
+    'brand': 'llama.cpp 설정',
+    'tab.models': '모델', 'tab.folders': '폴더', 'tab.router': '라우터',
+    'pill.checking': '라우터 확인 중…', 'pill.disconnected': '설정 서버 연결 끊김', 'pill.up': '라우터 :{port}',
+    'pill.loadedN': ' · {n}개 로드됨', 'pill.noneLoaded': ' · 로드된 모델 없음', 'pill.down': '라우터 꺼짐 :{port}',
+    'pill.file': '파일로 열림 - 서버 주소로 여세요',
+    'list.count': '모델 {n}개', 'list.loading': '불러오는 중…',
+    'btn.addModel': '+ 모델 추가', 'btn.load': '로드', 'btn.unload': '언로드',
+    'title.load': 'VRAM 에 올리기', 'title.unload': 'VRAM 에서 내리기',
+    'badge.vision': '비전', 'badge.draft': '드래프터', 'badge.manual': '수동 추가', 'badge.folder': '폴더',
+    'badge.overrides': '내 설정 {n}', 'badge.dirty': '저장 안 됨 {n}',
+    'st.loaded': '로드됨', 'st.loading': '로딩 중', 'st.unloaded': '언로드됨', 'st.sleeping': '슬립 (VRAM 해제됨)',
+    'st.downloading': '다운로드 중', 'st.downloaded': '다운로드됨', 'st.failed': '로드 실패', 'st.unknown': '알 수 없음', 'st.off': '라우터 꺼짐',
+    'src.auto.lmstudio': 'LM Studio 자동', 'src.auto.folder': '자동 감지', 'src.global': '공통 [*]', 'src.default': 'llama.cpp 기본값',
+    'detail.select': '모델을 선택하세요',
+    'empty.noModels': '<b>아직 모델이 없어요.</b><br>GGUF 파일이나 모델 폴더를 추가하세요. LM Studio 가 있으면 그 모델도 자동으로 보여요.',
+    'meta.trainCtx': '학습 컨텍스트 {n}', 'meta.mtp': 'MTP 내장', 'meta.vision': '비전', 'meta.draft': '드래프터 {name}',
+    'meta.src.lmstudio': 'LM Studio', 'meta.src.folder': '폴더 {root}', 'meta.src.manual': '수동 추가',
+    'args.summary': '실제 실행 인자 (라우터 기준)', 'args.off': '(라우터가 꺼져 있음)', 'args.missing': '(라우터 목록에 없음 - 저장 후 reload 되면 보여요)',
+    'search.ph': '옵션 검색 — 이름·설명 (예: rope, cache, draft, 온도)', 'filter.onlySet': '값이 있는 옵션만',
+    'btn.resetAll': '내 설정 모두 지우기', 'title.resetAll': '이 모델의 내 설정(override)을 모두 지우고 자동 값으로',
+    'toast.nothingToReset': '지울 내 설정이 없어요', 'toast.resetMarked': "{n}개 항목을 지우도록 표시했어요. '저장하고 적용'을 눌러야 반영돼요.",
+    'btn.removeModel': '목록에서 제거', 'confirm.removeModel.title': '이 수동 추가 모델을 제거할까요?',
+    'confirm.removeModel.body': 'models.override.ini 에서 <code>[{id}]</code> 섹션을 지워요. 모델 파일은 지우지 않아요.',
+    'toast.removed': '제거했어요: {id}', 'busy.remove': '제거 → 동기화 → 라우터 reload 중…',
+    'unknown.title': '알 수 없는 키', 'unknown.note': '이 llama-server 가 모르는 키 (읽기 전용)',
+    'all.summary': '전체 옵션', 'all.count': '{n}개 · llama-server --help 에서 자동 생성',
+    'group.common': '공통', 'group.sampling': '샘플링', 'group.speculative': '추측 디코딩', 'group.server': '서버', 'group.router': '라우터 전용', 'group.n': '{n}개',
+    'row.deprecated': '사용 중단 예정', 'row.reserved': '라우터가 관리', 'row.inherit': '상속: {v}', 'row.on': '켜기', 'row.off': '끄기',
+    'val.on': '켜짐', 'val.off': '꺼짐', 'val.none': '(없음)', 'row.alias': '별칭: {list}', 'row.default': '기본값: {v}',
+    'tag.willRemove': '제거 예정', 'tag.willClear': '지움 예정', 'tag.changed': '변경됨', 'tag.unsaved': '저장 전',
+    'tag.removed': '자동 값 제거됨', 'tag.removedTitle': '자동 값을 쓰지 않음', 'tag.user': '내 설정',
+    'btn.restoreAuto': '자동 값 되살리기', 'btn.clear': '내 설정 지우기 (상속 값으로)', 'btn.removeAuto': '자동 값({v}) 제거 - 공통값/기본값을 씀',
+    'err.semicolon': '; 와 # 는 쓸 수 없어요 (llama.cpp ini 에서 주석으로 잘림)', 'err.number': '숫자를 입력하세요', 'err.numberOr': ' (또는 {list})', 'err.enum': '{list} 중 하나',
+    'savebar.unsaved': '저장 안 된 변경 {n}개', 'savebar.errors': '입력 오류 {n}개', 'savebar.revert': '되돌리기', 'savebar.save': '저장하고 적용',
+    'toast.fixErrors': '입력 오류를 먼저 고쳐 주세요', 'save.clear': '내 설정 지움 (상속)', 'save.remove': '자동 값 제거',
+    'save.warnLoaded': '⚠️ 이 모델은 지금 <b>{st}</b> 상태예요. 적용하면 <b>언로드</b>되고, 다음 요청 때 새 설정으로 다시 로드돼요.',
+    'save.routerOff': '라우터가 꺼져 있어서 파일에만 저장돼요. 다음에 라우터를 켤 때 적용돼요.',
+    'save.title': '저장하고 적용할까요?', 'busy.save': '저장 → 동기화 → 라우터 reload 중…',
+    'toast.noChange': '파일 내용이 그대로예요 (바뀐 게 없음)', 'toast.savedReloaded': '저장하고 라우터에 적용했어요',
+    'toast.savedOnly': '저장했어요 (라우터 꺼짐 - 다음 시작 때 적용)', 'toast.unloaded': '언로드됨: {list}', 'toast.reloadFailed': '라우터 reload 실패: {e}',
+    'toast.loadReq': '로드 요청: {id}', 'toast.unloadDone': '언로드: {id}',
+    'btn.cancel': '취소', 'btn.ok': '확인', 'load.failed': '불러오기 실패: {e}',
+    'net.file': "파일로 직접 열면 동작하지 않아요. 바탕화면 'llama.cpp 설정'(config-ui.bat)으로 {url} 을 여세요.",
+    'net.down': "설정 서버({host})에 연결하지 못했어요 - 서버가 꺼졌을 수 있어요. config-ui.bat (바탕화면 'llama.cpp 설정')을 다시 실행하세요. ({e})",
+    'file.guard': '<b>index.html 을 파일로 직접 열었어요.</b><br><br>이 화면은 설정 서버를 통해서만 동작해요. <b>config-ui.bat</b> 을 실행하거나<br>서버가 이미 켜져 있으면 <a href="{url}">{url}</a> 로 여세요.',
+    'add.title': '모델 추가', 'add.path': 'GGUF 파일 또는 폴더 경로', 'add.pathPh': '예: D:\\models   또는   D:\\models\\qwen3-8b-q4_k_m.gguf',
+    'add.id': '모델 id (파일일 때만, 비우면 파일 이름으로)', 'add.idPh': '예: qwen3-8b',
+    'add.hint': '• <b>폴더</b>: 안의 GGUF 를 하위 폴더까지 전부 찾아 목록에 추가해요 (폴더 탭에서 관리)<br>• <b>파일</b>: 그 모델 하나만 추가해요. 같은 폴더의 mmproj(비전)·드래프터와 MTP 는 자동으로 설정돼요<br>• 탐색기에서 Shift + 우클릭 → <b>경로로 복사</b> 한 뒤 붙여넣으면 편해요',
+    'add.submit': '추가', 'busy.add': '추가 → 동기화 → 라우터 reload 중…',
+    'toast.addedFolder': '폴더를 추가했어요 - 새 모델 {n}개', 'toast.addedFile': '모델을 추가했어요: {id}',
+    'folders.title': '모델 폴더', 'folders.desc': '아래 폴더의 GGUF 파일을 하위 폴더까지 찾아서 모델 목록을 만들어요. 같은 폴더의 mmproj(비전)·드래프터와 MTP 는 자동 감지돼요. 파일은 복사하지 않아요.',
+    'folders.lmFound': "모델 id 와 LM Studio 의 모델별 로드 설정(컨텍스트, KV 캐시 등)을 그대로 가져와요 · {path}",
+    'folders.lmMissing': 'LM Studio 가 설치되어 있지 않아요 (없어도 돼요)', 'folders.count': '모델 {n}개', 'folders.missing': '폴더가 없어요',
+    'folders.none': '추가한 폴더가 없어요', 'folders.addPh': '폴더 경로 (예: D:\\models)', 'folders.add': '폴더 추가', 'folders.remove': '빼기',
+    'folders.manualTitle': '수동 추가한 모델', 'folders.manualN': '파일 하나씩 추가한 모델 {n}개 · 모델 탭에서 선택 후 “목록에서 제거”로 뺄 수 있어요',
+    'confirm.removeFolder.title': '이 폴더를 목록에서 뺄까요?', 'confirm.removeFolder.body': '이 폴더의 모델 {n}개가 목록에서 빠져요. 파일은 지우지 않아요.',
+    'confirm.lmOff.title': 'LM Studio 모델을 목록에서 뺄까요?', 'confirm.lmOff.body': 'LM Studio 모델 {n}개가 목록에서 빠져요. 파일과 LM Studio 설정은 그대로예요.',
+    'confirm.loaded': '로드된 모델이 내려가요: <b>{list}</b><br>ComfyUI 등에서 쓰는 중이면 요청이 끊겨요.',
+    'busy.sources': '적용 중… (스캔 → 동기화 → 라우터 reload)', 'toast.sourcesApplied': '적용했어요 · 추가 {a} · 제거 {r}',
+    'router.status': '라우터 상태', 'router.start': '시작', 'router.stop': '중지', 'router.restart': '재시작', 'router.checking': '확인 중…',
+    'router.off': '꺼짐', 'router.offHint': "시작을 누르면 'llama.cpp router' 창이 열려요.",
+    'router.state': '상태', 'router.running': '실행 중 :{port}', 'router.loaded': '로드된 모델', 'router.none': '없음',
+    'router.process': '프로세스', 'router.processVal': 'llama-server PID {pid} · 창 {name} PID {root}', 'router.cmd': '실행 명령',
+    'router.mismatch': '저장된 옵션과 실행 중인 값이 달라요 ({list}) → 재시작하면 적용돼요.',
+    'router.notFound': '라우터 프로세스를 못 찾았어요 (start-router 로 띄운 게 아닌 듯). 중지/재시작은 직접 해 주세요.',
+    'router.options': '실행 옵션', 'router.save': '저장',
+    'router.optionsHint': '저장한 뒤 <b>재시작</b>해야 적용돼요. start-router.bat / open-webui.bat 으로 켤 때도 이 값을 써요.',
+    'router.default': '기본 {v}', 'router.enable': '켜기',
+    'toast.routerSaved': '라우터 옵션을 저장했어요. 재시작하면 적용돼요.',
+    'confirm.restartNote': "'llama.cpp router' 창과 MCP 게이트웨이, 모델 감시가 같이 종료되고 새 창으로 다시 시작돼요.",
+    'confirm.stopNote': "'llama.cpp router' 창과 MCP 게이트웨이, 모델 감시가 같이 종료돼요.",
+    'confirm.restartTitle': '라우터를 재시작할까요?', 'confirm.stopTitle': '라우터를 중지할까요?',
+    'busy.stop': '라우터 중지 중…', 'busy.start': '라우터 시작 요청 중…', 'busy.restart': '라우터 재시작 중…',
+    'toast.stopped': '라우터를 중지했어요', 'toast.started': "라우터를 시작했어요 - 'llama.cpp router' 창에서 진행 상황이 보여요",
+    'toast.ready': '라우터가 준비됐어요', 'toast.timeout': "라우터가 3분 안에 응답하지 않았어요 - 'llama.cpp router' 창을 확인하세요",
+    'files.title': '파일', 'files.override': '내 설정', 'files.generated': '자동 생성', 'files.folders': '모델 폴더', 'files.routerOptions': '라우터 옵션',
+  },
+  en: {
+    'brand': 'llama.cpp Settings',
+    'tab.models': 'Models', 'tab.folders': 'Folders', 'tab.router': 'Router',
+    'pill.checking': 'Checking router…', 'pill.disconnected': 'Settings server disconnected', 'pill.up': 'Router :{port}',
+    'pill.loadedN': ' · {n} loaded', 'pill.noneLoaded': ' · no model loaded', 'pill.down': 'Router off :{port}',
+    'pill.file': 'Opened as a file - use the server URL',
+    'list.count': '{n} models', 'list.loading': 'Loading…',
+    'btn.addModel': '+ Add model', 'btn.load': 'Load', 'btn.unload': 'Unload',
+    'title.load': 'Load into VRAM', 'title.unload': 'Unload from VRAM',
+    'badge.vision': 'Vision', 'badge.draft': 'Drafter', 'badge.manual': 'Manual', 'badge.folder': 'Folder',
+    'badge.overrides': '{n} custom', 'badge.dirty': '{n} unsaved',
+    'st.loaded': 'Loaded', 'st.loading': 'Loading', 'st.unloaded': 'Unloaded', 'st.sleeping': 'Sleeping (VRAM freed)',
+    'st.downloading': 'Downloading', 'st.downloaded': 'Downloaded', 'st.failed': 'Load failed', 'st.unknown': 'Unknown', 'st.off': 'Router off',
+    'src.auto.lmstudio': 'LM Studio', 'src.auto.folder': 'Auto-detected', 'src.global': 'Global [*]', 'src.default': 'llama.cpp default',
+    'detail.select': 'Select a model',
+    'empty.noModels': '<b>No models yet.</b><br>Add a GGUF file or a models folder. If LM Studio is installed, its models show up automatically.',
+    'meta.trainCtx': 'trained ctx {n}', 'meta.mtp': 'built-in MTP', 'meta.vision': 'vision', 'meta.draft': 'drafter {name}',
+    'meta.src.lmstudio': 'LM Studio', 'meta.src.folder': 'folder {root}', 'meta.src.manual': 'added manually',
+    'args.summary': 'Actual launch arguments (from the router)', 'args.off': '(router is off)', 'args.missing': '(not in the router list yet - appears after save/reload)',
+    'search.ph': 'Search options — name or description (e.g. rope, cache, draft, temp)', 'filter.onlySet': 'Only options with a value',
+    'btn.resetAll': 'Clear all custom values', 'title.resetAll': 'Remove all overrides of this model and use automatic values',
+    'toast.nothingToReset': 'No custom values to clear', 'toast.resetMarked': "Marked {n} values to clear. Press 'Save & apply' to apply.",
+    'btn.removeModel': 'Remove from list', 'confirm.removeModel.title': 'Remove this manually added model?',
+    'confirm.removeModel.body': 'Deletes the <code>[{id}]</code> section from models.override.ini. The model file is not deleted.',
+    'toast.removed': 'Removed: {id}', 'busy.remove': 'Removing → syncing → reloading router…',
+    'unknown.title': 'Unknown keys', 'unknown.note': 'keys this llama-server does not recognize (read-only)',
+    'all.summary': 'All options', 'all.count': '{n} · generated from llama-server --help',
+    'group.common': 'Common', 'group.sampling': 'Sampling', 'group.speculative': 'Speculative decoding', 'group.server': 'Server', 'group.router': 'Router only', 'group.n': '{n}',
+    'row.deprecated': 'deprecated', 'row.reserved': 'managed by router', 'row.inherit': 'Inherit: {v}', 'row.on': 'On', 'row.off': 'Off',
+    'val.on': 'on', 'val.off': 'off', 'val.none': '(none)', 'row.alias': 'Aliases: {list}', 'row.default': 'Default: {v}',
+    'tag.willRemove': 'will remove', 'tag.willClear': 'will clear', 'tag.changed': 'changed', 'tag.unsaved': 'not saved yet',
+    'tag.removed': 'auto value removed', 'tag.removedTitle': 'the automatic value is not used', 'tag.user': 'custom',
+    'btn.restoreAuto': 'Restore automatic value', 'btn.clear': 'Clear custom value (inherit)', 'btn.removeAuto': 'Remove automatic value ({v}) - use global/default',
+    'err.semicolon': "';' and '#' are not allowed (llama.cpp ini treats them as comments)", 'err.number': 'Enter a number', 'err.numberOr': ' (or {list})', 'err.enum': 'One of: {list}',
+    'savebar.unsaved': '{n} unsaved changes', 'savebar.errors': '{n} invalid', 'savebar.revert': 'Revert', 'savebar.save': 'Save & apply',
+    'toast.fixErrors': 'Fix the invalid values first', 'save.clear': 'clear custom value (inherit)', 'save.remove': 'remove automatic value',
+    'save.warnLoaded': '⚠️ This model is currently <b>{st}</b>. Applying will <b>unload</b> it; it reloads with the new settings on the next request.',
+    'save.routerOff': 'The router is off, so this only saves to the file. It applies the next time the router starts.',
+    'save.title': 'Save and apply?', 'busy.save': 'Saving → syncing → reloading router…',
+    'toast.noChange': 'Nothing changed in the file', 'toast.savedReloaded': 'Saved and applied to the router',
+    'toast.savedOnly': 'Saved (router off - applies on next start)', 'toast.unloaded': 'Unloaded: {list}', 'toast.reloadFailed': 'Router reload failed: {e}',
+    'toast.loadReq': 'Load requested: {id}', 'toast.unloadDone': 'Unloaded: {id}',
+    'btn.cancel': 'Cancel', 'btn.ok': 'OK', 'load.failed': 'Failed to load: {e}',
+    'net.file': 'This page does not work when opened as a file. Run config-ui.bat and open {url}.',
+    'net.down': 'Could not reach the settings server ({host}) - it may have stopped. Run config-ui.bat again. ({e})',
+    'file.guard': '<b>index.html was opened directly as a file.</b><br><br>This page only works through the settings server. Run <b>config-ui.bat</b>,<br>or open <a href="{url}">{url}</a> if the server is already running.',
+    'add.title': 'Add model', 'add.path': 'GGUF file or folder path', 'add.pathPh': 'e.g. D:\\models   or   D:\\models\\qwen3-8b-q4_k_m.gguf',
+    'add.id': 'Model id (files only; blank = from the file name)', 'add.idPh': 'e.g. qwen3-8b',
+    'add.hint': '• <b>Folder</b>: finds every GGUF inside, including subfolders (manage in the Folders tab)<br>• <b>File</b>: adds just that model. mmproj (vision), drafters and MTP in the same folder are set up automatically<br>• Tip: in Explorer, Shift + right-click → <b>Copy as path</b>, then paste',
+    'add.submit': 'Add', 'busy.add': 'Adding → syncing → reloading router…',
+    'toast.addedFolder': 'Folder added - {n} new models', 'toast.addedFile': 'Model added: {id}',
+    'folders.title': 'Model folders', 'folders.desc': 'GGUF files in these folders (including subfolders) become models. mmproj (vision), drafters and MTP in the same folder are detected automatically. Files are not copied.',
+    'folders.lmFound': "Uses LM Studio's model ids and per-model load settings (context, KV cache, …) · {path}",
+    'folders.lmMissing': 'LM Studio is not installed (not required)', 'folders.count': '{n} models', 'folders.missing': 'folder not found',
+    'folders.none': 'No folders added', 'folders.addPh': 'Folder path (e.g. D:\\models)', 'folders.add': 'Add folder', 'folders.remove': 'Remove',
+    'folders.manualTitle': 'Manually added models', 'folders.manualN': 'Added one file at a time: {n} · select one in the Models tab and use “Remove from list” to remove it',
+    'list.count.one': '1 model', 'folders.count.one': '1 model', 'toast.addedFolder.one': 'Folder added - 1 new model',
+    'savebar.unsaved.one': '1 unsaved change', 'toast.resetMarked.one': "Marked 1 value to clear. Press 'Save & apply' to apply.",
+    'confirm.removeFolder.body.one': '1 model from this folder will leave the list. Files are not deleted.',
+    'confirm.lmOff.body.one': '1 LM Studio model will leave the list. Files and LM Studio settings stay as they are.',
+    'confirm.removeFolder.title': 'Remove this folder?', 'confirm.removeFolder.body': '{n} models from this folder will leave the list. Files are not deleted.',
+    'confirm.lmOff.title': 'Remove LM Studio models from the list?', 'confirm.lmOff.body': '{n} LM Studio models will leave the list. Files and LM Studio settings stay as they are.',
+    'confirm.loaded': 'Loaded models will be unloaded: <b>{list}</b><br>Requests in progress (e.g. from ComfyUI) will be cut off.',
+    'busy.sources': 'Applying… (scan → sync → reload router)', 'toast.sourcesApplied': 'Applied · added {a} · removed {r}',
+    'router.status': 'Router status', 'router.start': 'Start', 'router.stop': 'Stop', 'router.restart': 'Restart', 'router.checking': 'Checking…',
+    'router.off': 'Off', 'router.offHint': "Press Start to open the 'llama.cpp router' window.",
+    'router.state': 'State', 'router.running': 'Running :{port}', 'router.loaded': 'Loaded models', 'router.none': 'none',
+    'router.process': 'Process', 'router.processVal': 'llama-server PID {pid} · window {name} PID {root}', 'router.cmd': 'Command',
+    'router.mismatch': 'Saved options differ from the running router ({list}) → restart to apply.',
+    'router.notFound': "Couldn't find the router process (not started via start-router?). Stop or restart it manually.",
+    'router.options': 'Launch options', 'router.save': 'Save',
+    'router.optionsHint': 'Takes effect after <b>Restart</b>. Also used when starting via start-router.bat / open-webui.bat.',
+    'router.default': 'default {v}', 'router.enable': 'On',
+    'toast.routerSaved': 'Router options saved. Restart to apply.',
+    'confirm.restartNote': "The 'llama.cpp router' window, MCP gateway and model watcher stop and start again in a new window.",
+    'confirm.stopNote': "The 'llama.cpp router' window, MCP gateway and model watcher will stop.",
+    'confirm.restartTitle': 'Restart the router?', 'confirm.stopTitle': 'Stop the router?',
+    'busy.stop': 'Stopping router…', 'busy.start': 'Starting router…', 'busy.restart': 'Restarting router…',
+    'toast.stopped': 'Router stopped', 'toast.started': "Router starting - see the 'llama.cpp router' window for progress",
+    'toast.ready': 'Router is ready', 'toast.timeout': "The router didn't respond within 3 minutes - check the 'llama.cpp router' window",
+    'files.title': 'Files', 'files.override': 'Custom values', 'files.generated': 'Generated', 'files.folders': 'Model folders', 'files.routerOptions': 'Router options',
+  },
+};
+let LANG = (() => {
+  try { const v = localStorage.getItem('llamaConfigUi.lang'); if (v === 'ko' || v === 'en') return v; } catch {}
+  return (navigator.language || '').toLowerCase().startsWith('ko') ? 'ko' : 'en';
+})();
+function t(key, vars) {
+  const one = vars && vars.n === 1 ? I18N[LANG][key + '.one'] : undefined;   // 영어 단수형 ("1 model")
+  let s = one ?? I18N[LANG][key] ?? I18N.ko[key] ?? `⟦${key}⟧`;
+  if (vars) s = s.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
+  return s;
+}
+const L = obj => obj ? (obj[LANG] ?? obj.ko ?? '') : '';   // 서버가 준 {ko, en}
+function applyStatic() {
+  document.documentElement.lang = LANG;
+  document.title = t('brand');
+  $$('[data-i18n]').forEach(el => { el.innerHTML = t(el.dataset.i18n); });
+  $$('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+  $('#langSel').value = LANG;
+}
 
+// 자주 쓰는 옵션: [이름, 한국어 라벨, 한국어 설명, English label, English description]
 const CURATED = [
-  { title: '컨텍스트 · 메모리', items: [
-    ['ctx-size', '컨텍스트 길이', '한 번에 기억하는 토큰 수. 늘리면 KV 캐시만큼 VRAM 을 더 씀. 0 = 모델 학습값'],
-    ['cache-type-k', 'KV 캐시 K 타입', 'f16 기본. q8_0 이면 KV 메모리 약 절반, 품질 손실 거의 없음'],
-    ['cache-type-v', 'KV 캐시 V 타입', '보통 K 와 같게. V 양자화는 Flash Attention 이 켜져 있어야 함'],
-    ['n-gpu-layers', 'GPU 레이어', 'all = 전부 VRAM. 모자라면 숫자를 줄여 일부를 CPU(RAM)로'],
-    ['n-cpu-moe', 'MoE 전문가 CPU 레이어 수', 'MoE 모델(A3B 등)에서 앞쪽 N개 레이어의 전문가 가중치를 RAM 에 둠. VRAM 절약, 속도 감소'],
-    ['flash-attn', 'Flash Attention', 'on 권장. 메모리 절약 + KV 캐시 양자화에 필요'],
+  { title: { ko: '컨텍스트 · 메모리', en: 'Context · memory' }, items: [
+    ['ctx-size', '컨텍스트 길이', '한 번에 기억하는 토큰 수. 늘리면 KV 캐시만큼 VRAM 을 더 씀. 0 = 모델 학습값',
+      'Context length', 'Tokens the model can keep in view. Larger uses more VRAM for the KV cache. 0 = trained length'],
+    ['cache-type-k', 'KV 캐시 K 타입', 'f16 기본. q8_0 이면 KV 메모리 약 절반, 품질 손실 거의 없음',
+      'KV cache type (K)', 'f16 by default. q8_0 roughly halves KV memory with almost no quality loss'],
+    ['cache-type-v', 'KV 캐시 V 타입', '보통 K 와 같게. V 양자화는 Flash Attention 이 켜져 있어야 함',
+      'KV cache type (V)', 'Usually the same as K. Quantizing V requires Flash Attention'],
+    ['n-gpu-layers', 'GPU 레이어', 'all = 전부 VRAM. 모자라면 숫자를 줄여 일부를 CPU(RAM)로',
+      'GPU layers', 'all = everything in VRAM. Lower the number to move some layers to CPU (RAM)'],
+    ['n-cpu-moe', 'MoE 전문가 CPU 레이어 수', 'MoE 모델(A3B 등)에서 앞쪽 N개 레이어의 전문가 가중치를 RAM 에 둠. VRAM 절약, 속도 감소',
+      'MoE experts on CPU (layers)', 'For MoE models (e.g. A3B), keeps expert weights of the first N layers in RAM. Saves VRAM, slower'],
+    ['flash-attn', 'Flash Attention', 'on 권장. 메모리 절약 + KV 캐시 양자화에 필요',
+      'Flash Attention', 'on is recommended. Saves memory and is required for KV cache quantization'],
   ]},
-  { title: '처리 · 속도', items: [
-    ['parallel', '동시 요청 수 (슬롯)', '동시에 처리할 요청 수. 컨텍스트가 슬롯 수로 나뉘므로 혼자 쓰면 1'],
-    ['batch-size', '논리 배치', '프롬프트를 한 번에 넘기는 최대 토큰 수'],
-    ['ubatch-size', '물리 배치', '키우면 긴 프롬프트 처리가 빨라지지만 VRAM 을 더 씀'],
-    ['threads', 'CPU 스레드', '생성에 쓰는 CPU 스레드. 전부 GPU 에 올렸으면 영향 적음'],
+  { title: { ko: '처리 · 속도', en: 'Throughput · speed' }, items: [
+    ['parallel', '동시 요청 수 (슬롯)', '동시에 처리할 요청 수. 컨텍스트가 슬롯 수로 나뉘므로 혼자 쓰면 1',
+      'Parallel requests (slots)', 'Requests handled at once. The context is split across slots, so use 1 for a single user'],
+    ['batch-size', '논리 배치', '프롬프트를 한 번에 넘기는 최대 토큰 수', 'Logical batch', 'Maximum prompt tokens submitted at once'],
+    ['ubatch-size', '물리 배치', '키우면 긴 프롬프트 처리가 빨라지지만 VRAM 을 더 씀', 'Physical batch', 'Larger speeds up long prompts but uses more VRAM'],
+    ['threads', 'CPU 스레드', '생성에 쓰는 CPU 스레드. 전부 GPU 에 올렸으면 영향 적음', 'CPU threads', 'CPU threads for generation. Little effect when fully offloaded to GPU'],
   ]},
-  { title: '추측 디코딩 (MTP · 드래프트)', items: [
-    ['spec-type', '방식', 'draft-mtp = 모델 내장 MTP 헤드 / 드래프터 사용,  none = 끔'],
-    ['spec-draft-n-max', '드래프트 토큰 수', '한 번에 미리 추측할 토큰 수 (보통 3)'],
-    ['spec-draft-model', '드래프트 모델 파일', '별도 드래프터 GGUF 경로 (Gemma4 는 mtp-*.gguf 자동 연결)'],
-    ['spec-draft-p-min', '드래프트 최소 확률', '이 확률보다 낮은 추측 토큰은 버림'],
+  { title: { ko: '추측 디코딩 (MTP · 드래프트)', en: 'Speculative decoding (MTP · draft)' }, items: [
+    ['spec-type', '방식', 'draft-mtp = 모델 내장 MTP 헤드 / 드래프터 사용,  none = 끔', 'Type', 'draft-mtp = use the built-in MTP head / drafter,  none = off'],
+    ['spec-draft-n-max', '드래프트 토큰 수', '한 번에 미리 추측할 토큰 수 (보통 3)', 'Draft tokens', 'Tokens to draft per step (usually 3)'],
+    ['spec-draft-model', '드래프트 모델 파일', '별도 드래프터 GGUF 경로 (같은 폴더의 mtp-*.gguf 는 자동 연결)', 'Draft model file', 'Path to a separate drafter GGUF (mtp-*.gguf in the same folder is linked automatically)'],
+    ['spec-draft-p-min', '드래프트 최소 확률', '이 확률보다 낮은 추측 토큰은 버림', 'Draft min probability', 'Drafted tokens below this probability are discarded'],
   ]},
-  { title: '샘플링 기본값', note: 'API 요청에 값이 없을 때 쓰임 · WebUI 는 WebUI 설정에서 직접 바꾼 항목이 우선', items: [
-    ['temp', '온도', '낮을수록 일관·정확, 높을수록 다양·창의적'],
-    ['top-k', 'Top-K', '확률 상위 K개 토큰만 후보 (0 = 끔)'],
-    ['top-p', 'Top-P', '누적 확률 P 안의 토큰만 후보 (1.0 = 끔)'],
-    ['min-p', 'Min-P', '최고 확률 대비 이 비율보다 낮은 토큰 제외 (0 = 끔)'],
-    ['repeat-penalty', '반복 패널티', '1.0 = 끔. 1.05~1.1 이면 같은 말 반복을 줄임'],
-    ['presence-penalty', '등장 패널티', '이미 나온 토큰에 고정 패널티 (0 = 끔)'],
-    ['frequency-penalty', '빈도 패널티', '많이 나온 토큰일수록 큰 패널티 (0 = 끔)'],
-    ['n-predict', '최대 생성 토큰', '-1 = 무제한 (요청의 max_tokens 가 없을 때)'],
-    ['seed', '시드', '-1 = 매번 랜덤. 고정하면 같은 입력에 같은 출력'],
+  { title: { ko: '샘플링 기본값', en: 'Sampling defaults' },
+    note: { ko: 'API 요청에 값이 없을 때 쓰임 · WebUI 는 WebUI 설정에서 직접 바꾼 항목이 우선', en: 'Used when a request does not set them · in the WebUI, values you changed in its settings win' },
+    items: [
+    ['temp', '온도', '낮을수록 일관·정확, 높을수록 다양·창의적', 'Temperature', 'Lower = focused and consistent, higher = more varied and creative'],
+    ['top-k', 'Top-K', '확률 상위 K개 토큰만 후보 (0 = 끔)', 'Top-K', 'Only the K most likely tokens are candidates (0 = off)'],
+    ['top-p', 'Top-P', '누적 확률 P 안의 토큰만 후보 (1.0 = 끔)', 'Top-P', 'Only tokens within cumulative probability P (1.0 = off)'],
+    ['min-p', 'Min-P', '최고 확률 대비 이 비율보다 낮은 토큰 제외 (0 = 끔)', 'Min-P', 'Drops tokens below this fraction of the top probability (0 = off)'],
+    ['repeat-penalty', '반복 패널티', '1.0 = 끔. 1.05~1.1 이면 같은 말 반복을 줄임', 'Repeat penalty', '1.0 = off. 1.05–1.1 reduces repetition'],
+    ['presence-penalty', '등장 패널티', '이미 나온 토큰에 고정 패널티 (0 = 끔)', 'Presence penalty', 'Flat penalty for tokens that already appeared (0 = off)'],
+    ['frequency-penalty', '빈도 패널티', '많이 나온 토큰일수록 큰 패널티 (0 = 끔)', 'Frequency penalty', 'Bigger penalty the more often a token appeared (0 = off)'],
+    ['n-predict', '최대 생성 토큰', '-1 = 무제한 (요청의 max_tokens 가 없을 때)', 'Max new tokens', '-1 = unlimited (when a request has no max_tokens)'],
+    ['seed', '시드', '-1 = 매번 랜덤. 고정하면 같은 입력에 같은 출력', 'Seed', '-1 = random each time. A fixed seed gives repeatable output'],
   ]},
-  { title: '추론 (thinking)', items: [
-    ['reasoning', '추론 모드', 'auto = 채팅 템플릿에 따름,  off = 생각 안 하고 바로 답'],
-    ['reasoning-budget', '추론 토큰 예산', '-1 = 무제한,  0 = 즉시 종료,  N = 최대 N 토큰만 생각'],
-    ['reasoning-format', '추론 출력 형식', 'deepseek = reasoning_content 로 분리,  none = 본문에 그대로'],
-    ['chat-template-kwargs', '템플릿 추가 인자 (JSON)', '예: {"enable_thinking":false}'],
+  { title: { ko: '추론 (thinking)', en: 'Reasoning (thinking)' }, items: [
+    ['reasoning', '추론 모드', 'auto = 채팅 템플릿에 따름,  off = 생각 안 하고 바로 답', 'Reasoning mode', 'auto = follow the chat template,  off = answer without thinking'],
+    ['reasoning-budget', '추론 토큰 예산', '-1 = 무제한,  0 = 즉시 종료,  N = 최대 N 토큰만 생각', 'Reasoning budget', '-1 = unlimited,  0 = stop immediately,  N = think at most N tokens'],
+    ['reasoning-format', '추론 출력 형식', 'deepseek = reasoning_content 로 분리,  none = 본문에 그대로', 'Reasoning format', 'deepseek = separate reasoning_content,  none = keep in the message'],
+    ['chat-template-kwargs', '템플릿 추가 인자 (JSON)', '예: {"enable_thinking":false}', 'Chat template kwargs (JSON)', 'e.g. {"enable_thinking":false}'],
   ]},
-  { title: '라우터 · 기타', items: [
-    ['load-on-startup', '라우터 시작 시 자동 로드', '켜면 라우터를 켤 때 바로 VRAM 에 올림'],
-    ['sleep-idle-seconds', '유휴 시 VRAM 해제 (초)', '요청 없이 이 시간이 지나면 VRAM 해제, 다음 요청 때 자동 재로드. -1 = 안 내림'],
-    ['mmproj', '비전 프로젝터 (mmproj)', '이미지 입력용 파일. ✕ 로 자동 값을 제거하면 비전 끔'],
-    ['model', '모델 파일', 'GGUF 경로 (LM Studio 모델은 변경 불가)'],
+  { title: { ko: '라우터 · 기타', en: 'Router · other' }, items: [
+    ['load-on-startup', '라우터 시작 시 자동 로드', '켜면 라우터를 켤 때 바로 VRAM 에 올림', 'Load on router start', 'If on, the model is loaded into VRAM when the router starts'],
+    ['sleep-idle-seconds', '유휴 시 VRAM 해제 (초)', '요청 없이 이 시간이 지나면 VRAM 해제, 다음 요청 때 자동 재로드. -1 = 안 내림',
+      'Free VRAM when idle (s)', 'Frees VRAM after this long without requests; reloads on the next request. -1 = never'],
+    ['mmproj', '비전 프로젝터 (mmproj)', '이미지 입력용 파일. ✕ 로 자동 값을 제거하면 비전 끔', 'Vision projector (mmproj)', 'File for image input. Remove the automatic value with ✕ to disable vision'],
+    ['model', '모델 파일', 'GGUF 경로 (자동으로 찾은 모델은 변경 불가, 수동 추가 모델만)', 'Model file', 'GGUF path (only editable for manually added models)'],
   ]},
 ];
+const GROUP_ORDER = ['common', 'sampling', 'speculative', 'server', 'router'];
+
+let S = null, LIVE = null, CUR = null, OPT = {}, ALIAS = {}, TAB = 'models';
+const DRAFT = {};            // 모델 id -> Map(옵션 id -> 값 | null(내 설정 지움) | '!'(자동 값 제거))
+const TRUTHY = ['on', 'enabled', 'true', '1'];
+const SERVER_URL = 'http://127.0.0.1:8092/';
 
 // ------------------------------------------------------------------ util
-const SERVER_URL = 'http://127.0.0.1:8092/';
 async function api(path, body) {
-  const init = body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
+  const init = { headers: { 'X-UI-Lang': LANG } };
+  if (body !== undefined) Object.assign(init, { method: 'POST', body: JSON.stringify(body), headers: { 'X-UI-Lang': LANG, 'Content-Type': 'application/json' } });
   let r;
   try { r = await fetch(path, init); }
   catch (e) {
-    throw new Error(location.protocol === 'file:'
-      ? `파일로 직접 열면 동작하지 않아요. 바탕화면 'llama.cpp 설정'(config-ui.bat)으로 ${SERVER_URL} 을 여세요.`
-      : `설정 서버(${location.host})에 연결하지 못했어요 - 서버가 꺼졌을 수 있어요. 바탕화면 'llama.cpp 설정'(config-ui.bat)을 다시 실행하세요. (${e.message})`);
+    throw new Error(location.protocol === 'file:' ? t('net.file', { url: SERVER_URL }) : t('net.down', { host: location.host, e: e.message }));
   }
   const d = await r.json().catch(() => ({ error: r.status + ' ' + r.statusText }));
   if (!r.ok) throw new Error(d.error || r.statusText);
   return d;
 }
 function toast(msg, kind = '', ms = 4500) {
-  const t = document.createElement('div'); t.className = 'toast ' + kind; t.textContent = msg;
-  $('#toasts').append(t); setTimeout(() => t.remove(), ms);
+  const el = document.createElement('div'); el.className = 'toast ' + kind; el.textContent = msg;
+  $('#toasts').append(el); setTimeout(() => el.remove(), ms);
 }
 function modal(title, html, buttons) {
   return new Promise(res => {
     $('#mTitle').textContent = title; $('#mBody').innerHTML = html; const f = $('#mFoot'); f.innerHTML = '';
     for (const [label, val, cls] of buttons) {
       const b = document.createElement('button'); b.textContent = label; if (cls) b.className = cls;
-      b.onclick = () => { $('#modal').hidden = true; res(val); }; f.append(b);
+      b.onclick = () => { $('#modal').hidden = true; res(typeof val === 'function' ? val() : val); }; f.append(b);
     }
-    $('#modal').hidden = false; (f.lastChild || f).focus?.();
+    $('#modal').hidden = false;
   });
 }
-const confirmBox = (title, html, ok = '확인', cls = 'primary') => modal(title, html, [['취소', false, 'ghost'], [ok, true, cls]]);
+const confirmBox = (title, html, ok, cls = 'primary') => modal(title, html, [[t('btn.cancel'), false, 'ghost'], [ok || t('btn.ok'), true, cls]]);
 function busy(msg) {
   if (!msg) { $('#modal').hidden = true; return; }
   $('#mTitle').textContent = ''; $('#mBody').innerHTML = `<p><span class="spin"></span>${esc(msg)}</p>`; $('#mFoot').innerHTML = '';
   $('#modal').hidden = false;
 }
-const fmtNum = n => Number(n).toLocaleString('ko-KR');
+const fmtNum = n => Number(n).toLocaleString(LANG === 'ko' ? 'ko-KR' : 'en-US');
 const model = id => S.models.find(m => m.id === id);
 const resolve = name => ALIAS[name] || name;
+const stKo = st => t('st.' + st) .startsWith('⟦') ? st : t('st.' + st);
 function statusOf(id) {
   const r = LIVE?.router?.models;
   if (!r) return 'off';
@@ -334,6 +565,7 @@ function statusOf(id) {
   return x.failed ? 'failed' : x.status;
 }
 const isRunning = st => ['loaded', 'loading', 'sleeping'].includes(st);
+const loadedList = () => Object.entries(LIVE?.router?.models || {}).filter(([, x]) => isRunning(x.status)).map(([id]) => id);
 
 // ------------------------------------------------------------------ 값 계산
 const savedVal = (m, id) => m.override[id]?.value ?? null;
@@ -343,22 +575,23 @@ function inherited(m, id, removedAuto) {
   if (S.global[id]) return { v: S.global[id].value, src: 'global' };
   return { v: OPT[id]?.default ?? '', src: 'default' };
 }
+const srcLabel = (m, src) => src === 'auto' ? t(m.source === 'lmstudio' ? 'src.auto.lmstudio' : 'src.auto.folder') : t('src.' + src);
 function fmtVal(o, v) {
-  if (v === null || v === undefined || v === '') return o.kind === 'flag' ? '꺼짐' : '';
+  if (v === null || v === undefined || v === '') return o.kind === 'flag' ? t('val.off') : '';
   if (o.kind === 'bool' || o.kind === 'flag') {
     const s = String(v).toLowerCase();
-    if (TRUTHY.includes(s)) return '켜짐';
-    if (['off', 'disabled', 'false', '0'].includes(s)) return '꺼짐';
+    if (TRUTHY.includes(s)) return t('val.on');
+    if (['off', 'disabled', 'false', '0'].includes(s)) return t('val.off');
   }
   if (o.id === 'ctx-size' && /^\d+$/.test(v) && +v > 0) return fmtNum(v);
   return String(v);
 }
 function validate(o, v) {
   if (v === null || v === '!') return '';
-  if (/[;#]/.test(v)) return '; 와 # 는 쓸 수 없어요 (llama.cpp ini 에서 주석으로 잘림)';
+  if (/[;#]/.test(v)) return t('err.semicolon');
   if (o.kind === 'number' && !(o.suggest || []).includes(v) && !/^-?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(v))
-    return '숫자를 입력하세요' + (o.suggest?.length ? ` (또는 ${o.suggest.join(', ')})` : '');
-  if (o.kind === 'enum' && !o.choices.includes(v)) return `${o.choices.join(', ')} 중 하나`;
+    return t('err.number') + (o.suggest?.length ? t('err.numberOr', { list: o.suggest.join(', ') }) : '');
+  if (o.kind === 'enum' && !o.choices.includes(v)) return t('err.enum', { list: o.choices.join(', ') });
   return '';
 }
 function draftErrors(m) {
@@ -377,21 +610,26 @@ function setDraft(m, id, val, fromInput) {
 let listSig = '';
 function renderList() {
   const el = $('#modelList');
-  if (!S.models.length) { el.innerHTML = '<div class="empty">모델이 없어요</div>'; return; }
-  const sig = JSON.stringify([CUR, S.models.map(m => [m.id, statusOf(m.id), Object.keys(m.override).length, DRAFT[m.id]?.size || 0])]);
-  if (sig === listSig && el.querySelector('.mi')) return;
+  const sig = JSON.stringify([LANG, CUR, S.models.map(m => [m.id, statusOf(m.id), Object.keys(m.override).length, DRAFT[m.id]?.size || 0])]);
+  if (sig === listSig) return;
   listSig = sig;
-  el.innerHTML = `<h4>모델 ${S.models.length}개</h4>` + S.models.map(m => {
+  let html = `<div class="listhead"><h4>${esc(t('list.count', { n: S.models.length }))}</h4><button id="lAdd">${esc(t('btn.addModel'))}</button></div>`;
+  html += S.models.map(m => {
     const st = statusOf(m.id); const nOver = Object.keys(m.override).filter(k => k !== 'model').length;
     const dirty = DRAFT[m.id]?.size;
-    const btn = st === 'off' ? '' : isRunning(st) ? `<button data-act="unload" title="VRAM 에서 내리기">언로드</button>` : `<button data-act="load" title="VRAM 에 올리기">로드</button>`;
+    const btn = st === 'off' ? '' : isRunning(st)
+      ? `<button data-act="unload" title="${esc(t('title.unload'))}">${esc(t('btn.unload'))}</button>`
+      : `<button data-act="load" title="${esc(t('title.load'))}">${esc(t('btn.load'))}</button>`;
+    const srcBadge = m.source === 'folder' ? `<b>${esc(t('badge.folder'))}</b>` : m.source === 'manual' ? `<b>${esc(t('badge.manual'))}</b>` : '';
     return `<div class="mi ${m.id === CUR ? 'on' : ''}" data-id="${esc(m.id)}" title="${esc(m.id)}">
-      <span class="dot s-${st}" title="${esc(STATUS_KO[st] || st)}"></span>
+      <span class="dot s-${st}" title="${esc(stKo(st))}"></span>
       <span class="mt"><span class="mn">${esc(m.display)}</span><span class="mid">${esc(m.id)}</span>
-        <span class="mb">${m.mtp ? '<b>MTP</b>' : ''}${m.vision ? '<b>비전</b>' : ''}${m.draft ? '<b>드래프터</b>' : ''}${m.extra ? '<b>수동 추가</b>' : ''}
-        ${m.size_gb ? `<span>${m.size_gb}GB</span>` : ''}${nOver ? `<b class="cnt">내 설정 ${nOver}</b>` : ''}${dirty ? `<b class="dirty">저장 안 됨 ${dirty}</b>` : ''}</span></span>
+        <span class="mb">${m.mtp ? '<b>MTP</b>' : ''}${m.vision ? `<b>${esc(t('badge.vision'))}</b>` : ''}${m.draft ? `<b>${esc(t('badge.draft'))}</b>` : ''}${srcBadge}
+        ${m.size_gb ? `<span>${m.size_gb}GB</span>` : ''}${nOver ? `<b class="cnt">${esc(t('badge.overrides', { n: nOver }))}</b>` : ''}${dirty ? `<b class="dirty">${esc(t('badge.dirty', { n: dirty }))}</b>` : ''}</span></span>
       ${btn}</div>`;
   }).join('');
+  el.innerHTML = html;
+  $('#lAdd').onclick = addModelDialog;
   $$('.mi', el).forEach(item => {
     item.onclick = e => {
       const act = e.target.closest('button')?.dataset.act;
@@ -404,7 +642,7 @@ function renderList() {
 async function loadUnload(id, act) {
   try {
     await api('/api/model/' + act, { id });
-    toast(act === 'load' ? `로드 요청: ${id}` : `언로드: ${id}`, 'ok');
+    toast(t(act === 'load' ? 'toast.loadReq' : 'toast.unloadDone', { id }), 'ok');
   } catch (e) { toast(e.message, 'err', 7000); }
   setTimeout(pollLive, 300);
 }
@@ -412,39 +650,47 @@ async function loadUnload(id, act) {
 // ------------------------------------------------------------------ 상세
 function renderDetail() {
   const el = $('#detail');
+  if (!S.models.length) {
+    el.innerHTML = `<div class="empty">${t('empty.noModels')}<br><button class="primary" id="eAdd">${esc(t('btn.addModel'))}</button></div>`;
+    $('#eAdd').onclick = addModelDialog;
+    return;
+  }
   const m = model(CUR);
-  if (!m) { el.innerHTML = '<div class="empty">모델을 선택하세요</div>'; return; }
+  if (!m) { el.innerHTML = `<div class="empty">${esc(t('detail.select'))}</div>`; return; }
+  const srcMeta = m.source === 'folder' ? t('meta.src.folder', { root: m.root }) : t('meta.src.' + m.source);
   const meta = [
     `<code>${esc(m.id)}</code>`, esc(m.arch), m.size_gb ? m.size_gb + 'GB' : '',
-    m.ctx_train ? `학습 컨텍스트 ${fmtNum(m.ctx_train)}` : '', m.mtp ? 'MTP 내장' : '', m.vision ? '비전' : '',
-    m.draft ? `드래프터 ${esc(m.draft)}` : '', esc(m.file),
+    m.ctx_train ? esc(t('meta.trainCtx', { n: fmtNum(m.ctx_train) })) : '', m.mtp ? esc(t('meta.mtp')) : '', m.vision ? esc(t('meta.vision')) : '',
+    m.draft ? esc(t('meta.draft', { name: m.draft })) : '', esc(m.file), esc(srcMeta),
   ].filter(Boolean).join('<span>·</span>');
   el.innerHTML = `<div class="dwrap">
     <div class="dh"><div><h2>${esc(m.display)}</h2><div class="dmeta">${meta}</div></div>
-      <div class="dact"><span class="st-label" id="dStatus"></span><button id="dLoad"></button></div></div>
-    ${m.notes.length ? `<div class="notes">${m.notes.map(esc).join('<br>')}</div>` : ''}
-    <details class="args"><summary>실제 실행 인자 (라우터 기준)</summary><pre id="dArgs"></pre></details>
-    <div class="tools"><input type="search" id="q" placeholder="옵션 검색 — 이름·설명 (예: rope, cache, draft, 온도)">
-      <label class="chk"><input type="checkbox" id="onlySet"> 값이 있는 옵션만</label>
-      <button class="ghost" id="resetAll" title="이 모델의 내 설정(override)을 모두 지우고 자동 값으로">내 설정 모두 지우기</button></div>
+      <div class="dact"><span class="st-label" id="dStatus"></span><button id="dLoad"></button>
+        ${m.source === 'manual' ? `<button class="danger" id="dRemove">${esc(t('btn.removeModel'))}</button>` : ''}</div></div>
+    ${m.notes.length ? `<div class="notes">${m.notes.map(n => esc(L(n))).join('<br>')}</div>` : ''}
+    <details class="args"><summary>${esc(t('args.summary'))}</summary><pre id="dArgs"></pre></details>
+    <div class="tools"><input type="search" id="q" placeholder="${esc(t('search.ph'))}">
+      <label class="chk"><input type="checkbox" id="onlySet"> ${esc(t('filter.onlySet'))}</label>
+      <button class="ghost" id="resetAll" title="${esc(t('title.resetAll'))}">${esc(t('btn.resetAll'))}</button></div>
     <div id="curated"></div>
-    ${m.unknown.length ? `<div class="group unknown"><h3>알 수 없는 키 <small>이 llama-server 가 모르는 키 (읽기 전용)</small></h3>
+    ${m.unknown.length ? `<div class="group unknown"><h3>${esc(t('unknown.title'))} <small>${esc(t('unknown.note'))}</small></h3>
       ${m.unknown.map(([k, v]) => `<div class="row"><code>${esc(k)}</code><code>${esc(v)}</code><span></span></div>`).join('')}</div>` : ''}
-    <details class="all" id="allopts"><summary>전체 옵션 <small id="allCount"></small></summary><div id="allGroups"></div></details>
+    <details class="all" id="allopts"><summary>${esc(t('all.summary'))} <small id="allCount"></small></summary><div id="allGroups"></div></details>
     <div class="savebar" id="saveBar" hidden><span class="sbt" id="sbText"></span>
-      <button class="ghost" id="sbRevert">되돌리기</button><button class="primary" id="sbSave">저장하고 적용</button></div>
+      <button class="ghost" id="sbRevert">${esc(t('savebar.revert'))}</button><button class="primary" id="sbSave">${esc(t('savebar.save'))}</button></div>
   </div>`;
 
   const curatedIds = new Set();
   const cur = $('#curated');
+  const li = LANG === 'en' ? 3 : 1;
   for (const g of CURATED) {
     const box = document.createElement('div'); box.className = 'group';
-    box.innerHTML = `<h3>${esc(g.title)}${g.note ? `<small>${esc(g.note)}</small>` : ''}</h3>`;
-    for (const [name, label, desc] of g.items) {
-      const id = resolve(name);
+    box.innerHTML = `<h3>${esc(L(g.title))}${g.note ? `<small>${esc(L(g.note))}</small>` : ''}</h3>`;
+    for (const item of g.items) {
+      const id = resolve(item[0]);
       if (!OPT[id]) continue;
       curatedIds.add(id);
-      box.append(rowEl(m, id, label, desc));
+      box.append(rowEl(m, id, item[li], item[li + 1]));
     }
     cur.append(box);
   }
@@ -457,22 +703,24 @@ function renderDetail() {
   const all = $('#allGroups'); let n = 0;
   for (const gname of names) {
     const box = document.createElement('div'); box.className = 'group';
-    box.innerHTML = `<h3>${esc(gname)} <small>${groups[gname].length}개</small></h3>`;
+    const title = t('group.' + gname).startsWith('⟦') ? gname : t('group.' + gname);
+    box.innerHTML = `<h3>${esc(title)} <small>${esc(t('group.n', { n: groups[gname].length }))}</small></h3>`;
     for (const o of groups[gname]) { box.append(rowEl(m, o.id)); n++; }
     all.append(box);
   }
-  $('#allCount').textContent = `${n}개 · llama-server --help 에서 자동 생성`;
+  $('#allCount').textContent = t('all.count', { n });
 
   $('#q').oninput = applyFilter; $('#onlySet').onchange = applyFilter;
   $('#resetAll').onclick = () => {
-    const ids = Object.keys(m.override).filter(k => !(m.extra && k === 'model'));
-    if (!ids.length) return toast('지울 내 설정이 없어요');
+    const ids = Object.keys(m.override).filter(k => !(m.source === 'manual' && k === 'model'));
+    if (!ids.length) return toast(t('toast.nothingToReset'));
     ids.forEach(id => setDraft(m, id, null));
-    toast(`${ids.length}개 항목을 지우도록 표시했어요. '저장하고 적용'을 눌러야 반영돼요.`);
+    toast(t('toast.resetMarked', { n: ids.length }));
   };
   $('#sbRevert').onclick = () => { delete DRAFT[m.id]; renderDetail(); renderList(); };
   $('#sbSave').onclick = save;
   $('#dLoad').onclick = () => loadUnload(m.id, isRunning(statusOf(m.id)) ? 'unload' : 'load');
+  if ($('#dRemove')) $('#dRemove').onclick = () => removeModel(m);
   updateSaveBar(); renderLiveDetail();
 }
 
@@ -484,17 +732,17 @@ function rowEl(m, id, label, desc) {
   row.dataset.hay = [id, ...o.names, ...o.neg, label, desc, o.help].join(' ').toLowerCase();
   row.innerHTML = `<div class="lab">
       <div class="lt">${label ? `<span class="nm">${esc(label)}</span><code>--${esc(id)}</code>` : `<code class="nm">--${esc(id)}</code>`}
-        ${o.deprecated ? '<span class="dep">사용 중단 예정</span>' : ''}${o.reserved ? '<span class="dep">라우터가 관리</span>' : ''}</div>
+        ${o.deprecated ? `<span class="dep">${esc(t('row.deprecated'))}</span>` : ''}${o.reserved ? `<span class="dep">${esc(t('row.reserved'))}</span>` : ''}</div>
       <div class="ds">${esc(desc || o.help)}</div></div>
     <div class="ctl"></div><div class="st"></div>`;
-  row.querySelector('.lab').title = (alias.length ? '별칭: ' + alias.join(', ') + '\n\n' : '') + o.help + (o.default ? `\n\n기본값: ${o.default}` : '');
+  row.querySelector('.lab').title = (alias.length ? t('row.alias', { list: alias.join(', ') }) + '\n\n' : '') + o.help + (o.default ? '\n\n' + t('row.default', { v: o.default }) : '');
   const ctl = row.querySelector('.ctl');
-  const locked = o.reserved || (id === 'model' && !m.extra);
+  const locked = o.reserved || (id === 'model' && m.source !== 'manual');
   if (['bool', 'flag', 'enum'].includes(o.kind)) {
     const sel = document.createElement('select');
-    sel.innerHTML = '<option value="">상속</option>' + (o.kind === 'enum'
+    sel.innerHTML = '<option value=""></option>' + (o.kind === 'enum'
       ? o.choices.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('')
-      : '<option value="true">켜기</option><option value="false">끄기</option>');
+      : `<option value="true">${esc(t('row.on'))}</option><option value="false">${esc(t('row.off'))}</option>`);
     sel.onchange = () => setDraft(m, id, sel.value === '' ? null : sel.value);
     sel.disabled = locked; ctl.append(sel);
   } else {
@@ -529,15 +777,15 @@ function rowEl(m, id, label, desc) {
 
 function refreshRow(row, m, fromInput) {
   const id = row.dataset.id, o = OPT[id];
-  const v = curVal(m, id), saved = savedVal(m, id);
+  const v = curVal(m, id);
   const removed = v === '!';
   const inh = inherited(m, id, removed);
-  const inhTxt = fmtVal(o, inh.v) || '(없음)';
+  const inhTxt = fmtVal(o, inh.v) || t('val.none');
   const sel = row.querySelector('.ctl select');
   const inp = row.querySelector('.ctl input[type=text]');
   const rng = row.querySelector('.ctl input[type=range]');
   if (sel) {
-    sel.options[0].textContent = `상속: ${inhTxt}`;
+    sel.options[0].textContent = t('row.inherit', { v: inhTxt });
     let sv = v === null || removed ? '' : v;
     if (sv && (o.kind === 'bool' || o.kind === 'flag')) sv = TRUTHY.includes(sv.toLowerCase()) ? 'true' : 'false';
     sel.value = sv;
@@ -554,19 +802,19 @@ function refreshRow(row, m, fromInput) {
   const dirty = !!DRAFT[m.id]?.has(id);
   const st = row.querySelector('.st'); st.innerHTML = '';
   let tag;
-  if (dirty) tag = `<span class="tag dirty" title="저장 전">${removed ? '제거 예정' : v === null ? '지움 예정' : '변경됨'}</span>`;
-  else if (removed) tag = '<span class="tag removed" title="LM Studio 자동 값을 쓰지 않음">자동 값 제거됨</span>';
-  else if (v !== null) tag = '<span class="tag user">내 설정</span>';
-  else tag = `<span class="tag src-${inh.src}">${SRC_KO[inh.src]}</span>`;
+  if (dirty) tag = `<span class="tag dirty" title="${esc(t('tag.unsaved'))}">${esc(t(removed ? 'tag.willRemove' : v === null ? 'tag.willClear' : 'tag.changed'))}</span>`;
+  else if (removed) tag = `<span class="tag removed" title="${esc(t('tag.removedTitle'))}">${esc(t('tag.removed'))}</span>`;
+  else if (v !== null) tag = `<span class="tag user">${esc(t('tag.user'))}</span>`;
+  else tag = `<span class="tag src-${inh.src}">${esc(srcLabel(m, inh.src))}</span>`;
   st.insertAdjacentHTML('beforeend', tag);
-  const locked = o.reserved || (id === 'model' && !m.extra);
+  const locked = o.reserved || (id === 'model');
   if (!locked && v !== null) {
     const b = document.createElement('button'); b.className = 'icon ghost'; b.textContent = '↺';
-    b.title = removed ? '자동 값 되살리기' : '내 설정 지우기 (상속 값으로)';
+    b.title = t(removed ? 'btn.restoreAuto' : 'btn.clear');
     b.onclick = () => setDraft(m, id, null); st.append(b);
-  } else if (!locked && v === null && m.auto[id] && !m.extra) {
+  } else if (!locked && v === null && m.auto[id] && m.source !== 'manual') {
     const b = document.createElement('button'); b.className = 'icon ghost'; b.textContent = '✕';
-    b.title = `LM Studio 자동 값(${m.auto[id].value}) 제거 - 공통값/기본값을 씀`;
+    b.title = t('btn.removeAuto', { v: m.auto[id].value });
     b.onclick = () => setDraft(m, id, '!'); st.append(b);
   }
   const e = validate(o, v);
@@ -599,33 +847,121 @@ function updateSaveBar() {
   bar.hidden = !d?.size;
   if (!d?.size) return;
   const errs = draftErrors(m);
-  $('#sbText').innerHTML = `저장 안 된 변경 ${d.size}개` + (errs.length ? `<small style="color:var(--err)">입력 오류 ${errs.length}개</small>` : '<small>Ctrl+S</small>');
+  $('#sbText').innerHTML = esc(t('savebar.unsaved', { n: d.size })) + (errs.length ? `<small style="color:var(--err)">${esc(t('savebar.errors', { n: errs.length }))}</small>` : '<small>Ctrl+S</small>');
   $('#sbSave').disabled = !!errs.length;
+}
+
+function syncResultToasts(r) {
+  if (r.unloaded?.length) toast(t('toast.unloaded', { list: r.unloaded.join(', ') }), 'ok', 6000);
+  if (r.reload_error) toast(t('toast.reloadFailed', { e: r.reload_error }), 'err', 9000);
 }
 
 async function save() {
   const m = model(CUR); const d = DRAFT[m?.id];
   if (!d?.size) return;
-  if (draftErrors(m).length) return toast('입력 오류를 먼저 고쳐 주세요', 'err');
+  if (draftErrors(m).length) return toast(t('toast.fixErrors'), 'err');
   const st = statusOf(m.id);
-  const items = [...d].map(([id, v]) => `<li><code>--${esc(id)}</code> → ${v === null ? '<i>내 설정 지움 (상속)</i>' : v === '!' ? '<i>자동 값 제거</i>' : `<b>${esc(v)}</b>`}</li>`).join('');
+  const items = [...d].map(([id, v]) => `<li><code>--${esc(id)}</code> → ${v === null ? `<i>${esc(t('save.clear'))}</i>` : v === '!' ? `<i>${esc(t('save.remove'))}</i>` : `<b>${esc(v)}</b>`}</li>`).join('');
   let html = `<ul>${items}</ul>`;
-  if (isRunning(st)) html += `<p class="warnp">⚠️ 이 모델은 지금 <b>${esc(STATUS_KO[st])}</b> 상태예요. 적용하면 <b>언로드</b>되고, 다음 요청 때 새 설정으로 다시 로드돼요.</p>`;
-  if (st === 'off') html += '<p class="muted">라우터가 꺼져 있어서 파일에만 저장돼요. 다음에 라우터를 켤 때 적용돼요.</p>';
-  if (!await confirmBox('저장하고 적용할까요?', html, '저장하고 적용')) return;
-  busy('저장 → LM Studio 동기화 → 라우터 reload 중…');
+  if (isRunning(st)) html += `<p class="warnp">${t('save.warnLoaded', { st: esc(stKo(st)) })}</p>`;
+  if (st === 'off') html += `<p class="muted">${esc(t('save.routerOff'))}</p>`;
+  if (!await confirmBox(t('save.title'), html, t('savebar.save'))) return;
+  busy(t('busy.save'));
   try {
     const r = await api('/api/model/save', { id: m.id, changes: Object.fromEntries(d) });
     delete DRAFT[m.id];
     busy(false);
-    if (!r.changed) toast('파일 내용이 그대로예요 (바뀐 게 없음)');
-    else toast((r.reloaded ? '저장하고 라우터에 적용했어요' : '저장했어요 (라우터 꺼짐 - 다음 시작 때 적용)')
-      + (r.unloaded?.length ? `\n언로드됨: ${r.unloaded.join(', ')}` : ''), 'ok', 6000);
-    if (r.reload_error) toast('라우터 reload 실패: ' + r.reload_error, 'err', 9000);
+    toast(!r.changed ? t('toast.noChange') : t(r.reloaded ? 'toast.savedReloaded' : 'toast.savedOnly'), r.changed ? 'ok' : '');
+    syncResultToasts(r);
     await loadState(true);
     pollLive();
   } catch (e) { busy(false); toast(e.message, 'err', 10000); }
 }
+
+// ------------------------------------------------------------------ 모델 추가 / 제거
+async function addModelDialog() {
+  const html = `<label for="aPath">${esc(t('add.path'))}</label><input type="text" id="aPath" spellcheck="false" placeholder="${esc(t('add.pathPh'))}">
+    <label for="aId">${esc(t('add.id'))}</label><input type="text" id="aId" spellcheck="false" placeholder="${esc(t('add.idPh'))}">
+    <div class="hint">${t('add.hint')}</div>`;
+  const go = modal(t('add.title'), html, [[t('btn.cancel'), null, 'ghost'], [t('add.submit'), () => ({ path: $('#aPath').value, id: $('#aId').value }), 'primary']]);
+  setTimeout(() => $('#aPath')?.focus(), 30);
+  const v = await go;
+  if (!v || !v.path.trim()) return;
+  busy(t('busy.add'));
+  try {
+    const r = await api('/api/model/add', v);
+    busy(false);
+    toast(r.kind === 'folder' ? t('toast.addedFolder', { n: r.added.length }) : t('toast.addedFile', { id: r.id }), 'ok', 6000);
+    syncResultToasts(r);
+    await loadState(true);
+    if (r.added?.length) { CUR = r.added[0]; listSig = ''; renderList(); renderDetail(); showTab('models'); }
+    pollLive();
+  } catch (e) { busy(false); toast(e.message, 'err', 10000); }
+}
+
+async function removeModel(m) {
+  const ld = loadedList().filter(id => id === m.id);
+  let html = `<p>${t('confirm.removeModel.body', { id: esc(m.id) })}</p>`;
+  if (ld.length) html += `<p class="warnp">${t('confirm.loaded', { list: esc(ld.join(', ')) })}</p>`;
+  if (!await confirmBox(t('confirm.removeModel.title'), html, t('btn.removeModel'), 'danger')) return;
+  busy(t('busy.remove'));
+  try {
+    const r = await api('/api/model/remove', { id: m.id });
+    busy(false); delete DRAFT[m.id];
+    toast(t('toast.removed', { id: m.id }), 'ok'); syncResultToasts(r);
+    CUR = null; await loadState(); pollLive();
+  } catch (e) { busy(false); toast(e.message, 'err', 10000); }
+}
+
+// ------------------------------------------------------------------ 폴더 탭
+function renderFolders() {
+  const s = S.sources;
+  $('#fLm').checked = s.lmstudio.enabled;
+  $('#fLmStatus').className = 'fs' + (s.lmstudio.found ? '' : ' bad');
+  $('#fLmStatus').textContent = s.lmstudio.found ? t('folders.lmFound', { path: s.lmstudio.path }) : t('folders.lmMissing');
+  $('#fLmCount').textContent = t('folders.count', { n: s.lmstudio.count });
+  $('#fLmCount').hidden = !s.lmstudio.found;
+  $('#fList').innerHTML = s.folders.length ? s.folders.map((f, i) => `<div class="frow">
+      <div><div class="fp">${esc(f.path)}</div>${f.exists ? '' : `<div class="fs bad">${esc(t('folders.missing'))}</div>`}</div>
+      <span class="badge">${esc(t('folders.count', { n: f.count }))}</span>
+      <button class="danger" data-i="${i}">${esc(t('folders.remove'))}</button></div>`).join('')
+    : `<div class="frow"><div class="fs">${esc(t('folders.none'))}</div><span></span><span></span></div>`;
+  $$('#fList button[data-i]').forEach(b => b.onclick = () => removeFolder(s.folders[+b.dataset.i]));
+  $('#fManual').textContent = t('folders.manualN', { n: s.manual });
+}
+async function applySources(lmstudio, folders, confirmHtml, title) {
+  if (confirmHtml && !await confirmBox(title, confirmHtml, t('btn.ok'), 'danger')) { renderFolders(); return false; }
+  busy(t('busy.sources'));
+  try {
+    const r = await api('/api/sources', { lmstudio, folders });
+    busy(false);
+    toast(t('toast.sourcesApplied', { a: r.added.length, r: r.removed.length }), 'ok', 6000);
+    syncResultToasts(r);
+    await loadState(true); pollLive();
+    return true;
+  } catch (e) { busy(false); toast(e.message, 'err', 10000); renderFolders(); return false; }
+}
+function loadedWarning(pred) {
+  const ld = loadedList().filter(id => { const m = model(id); return m && pred(m); });
+  return ld.length ? `<p class="warnp">${t('confirm.loaded', { list: esc(ld.join(', ')) })}</p>` : '';
+}
+async function removeFolder(f) {
+  const under = m => m.source === 'folder' && m.root && m.root.toLowerCase() === f.path.toLowerCase();
+  const html = `<p class="mono">${esc(f.path)}</p><p>${esc(t('confirm.removeFolder.body', { n: f.count }))}</p>` + loadedWarning(under);
+  await applySources(S.sources.lmstudio.enabled, S.sources.folders.map(x => x.path).filter(p => p !== f.path), html, t('confirm.removeFolder.title'));
+}
+$('#fLm').onchange = async () => {
+  const on = $('#fLm').checked; const folders = S.sources.folders.map(x => x.path);
+  if (on) return applySources(true, folders);
+  const html = `<p>${esc(t('confirm.lmOff.body', { n: S.sources.lmstudio.count }))}</p>` + loadedWarning(m => m.source === 'lmstudio');
+  await applySources(false, folders, html, t('confirm.lmOff.title'));
+};
+$('#fAdd').onclick = async () => {
+  const p = $('#fPath').value.trim(); if (!p) return;
+  if (await applySources(S.sources.lmstudio.enabled, [...S.sources.folders.map(x => x.path), p])) $('#fPath').value = '';
+};
+$('#fPath').onkeydown = e => { if (e.key === 'Enter') $('#fAdd').click(); };
+$('#fAddModel').onclick = addModelDialog;
 
 // ------------------------------------------------------------------ live (라우터 상태 / VRAM)
 async function pollLive() {
@@ -636,11 +972,11 @@ function renderLive() {
   const up = !!LIVE?.router?.models;
   const port = LIVE?.router?.port || 8080;
   const pill = $('#routerPill');
-  if (!LIVE) { pill.className = 'pill down'; pill.textContent = '설정 서버 연결 끊김'; }
+  if (!LIVE) { pill.className = 'pill down'; pill.textContent = t('pill.disconnected'); }
   else if (up) {
-    const loaded = Object.entries(LIVE.router.models).filter(([, x]) => x.status === 'loaded' || x.status === 'loading');
-    pill.className = 'pill up'; pill.textContent = `라우터 :${port}` + (loaded.length ? ` · ${loaded.length}개 로드됨` : ' · 로드된 모델 없음');
-  } else { pill.className = 'pill down'; pill.textContent = `라우터 꺼짐 :${port}`; }
+    const n = Object.values(LIVE.router.models).filter(x => x.status === 'loaded' || x.status === 'loading').length;
+    pill.className = 'pill up'; pill.textContent = t('pill.up', { port }) + (n ? t('pill.loadedN', { n }) : t('pill.noneLoaded'));
+  } else { pill.className = 'pill down'; pill.textContent = t('pill.down', { port }); }
   $('#webuiLink').href = `http://127.0.0.1:${port}/`;
   const v = LIVE?.vram;
   if (v) {
@@ -650,17 +986,17 @@ function renderLive() {
     $('#vram').classList.toggle('hot', p > .9); $('#vram').title = v.name;
   }
   if (S) { renderList(); renderLiveDetail(); }
-  if (!$('#tab-router').hidden) renderRouterStatus();
+  if (TAB === 'router') renderRouterStatus();
 }
 function renderLiveDetail() {
-  const m = model(CUR); if (!m || !$('#dStatus')) return;
+  const m = S && model(CUR); if (!m || !$('#dStatus')) return;
   const st = statusOf(m.id); const x = LIVE?.router?.models?.[m.id];
   const lab = $('#dStatus'); lab.className = 'st-label s-' + st;
-  lab.textContent = (STATUS_KO[st] || st) + (st === 'failed' && x?.exit_code != null ? ` (exit ${x.exit_code})` : '');
+  lab.textContent = stKo(st) + (st === 'failed' && x?.exit_code != null ? ` (exit ${x.exit_code})` : '');
   const b = $('#dLoad'); b.disabled = st === 'off' || st === 'unknown';
-  b.textContent = isRunning(st) ? '언로드' : '로드';
+  b.textContent = t(isRunning(st) ? 'btn.unload' : 'btn.load');
   b.className = isRunning(st) ? '' : 'primary';
-  const args = x?.args?.length ? x.args.map(a => /\s/.test(a) ? `"${a}"` : a).join(' ') : (st === 'off' ? '(라우터가 꺼져 있음)' : '(라우터 목록에 없음 - 저장 후 reload 되면 보여요)');
+  const args = x?.args?.length ? x.args.map(a => /\s/.test(a) ? `"${a}"` : a).join(' ') : t(st === 'off' ? 'args.off' : 'args.missing');
   const pre = $('#dArgs'); if (pre.textContent !== args) pre.textContent = args;
 }
 
@@ -673,40 +1009,41 @@ async function loadRouterInfo() {
 function renderRouterStatus() {
   const el = $('#rInfo'); const up = !!LIVE?.router?.models;
   $('#rStart').disabled = up; $('#rStop').disabled = !up; $('#rRestart').disabled = !up;
-  if (!RINFO) { el.textContent = '확인 중…'; return; }
+  if (!RINFO) { el.textContent = t('router.checking'); return; }
   if (RINFO.error) { el.textContent = RINFO.error; return; }
   const p = RINFO.process;
-  if (!up) { el.innerHTML = `<span class="pill down">꺼짐</span> <span class="muted">시작을 누르면 'llama.cpp router' 창이 열려요.</span>`; return; }
-  const loaded = Object.entries(LIVE.router.models).filter(([, x]) => isRunning(x.status)).map(([id, x]) => `${id} (${STATUS_KO[x.status]})`);
-  let html = `<div class="kv"><div>상태</div><div><span class="pill up">실행 중 :${LIVE.router.port}</span></div>
-    <div>로드된 모델</div><div>${loaded.length ? loaded.map(esc).join('<br>') : '<span class="muted">없음</span>'}</div>`;
-  if (p) html += `<div>프로세스</div><div>llama-server PID ${p.pid} · 창 ${esc(p.root_name)} PID ${p.root_pid}</div>
-    <div>실행 명령</div><div><pre class="mono">${esc(p.cmdline)}</pre></div>`;
+  if (!up) { el.innerHTML = `<span class="pill down">${esc(t('router.off'))}</span> <span class="muted">${esc(t('router.offHint'))}</span>`; return; }
+  const loaded = Object.entries(LIVE.router.models).filter(([, x]) => isRunning(x.status)).map(([id, x]) => `${id} (${stKo(x.status)})`);
+  let html = `<div class="kv"><div>${esc(t('router.state'))}</div><div><span class="pill up">${esc(t('router.running', { port: LIVE.router.port }))}</span></div>
+    <div>${esc(t('router.loaded'))}</div><div>${loaded.length ? loaded.map(esc).join('<br>') : `<span class="muted">${esc(t('router.none'))}</span>`}</div>`;
+  if (p) html += `<div>${esc(t('router.process'))}</div><div>${esc(t('router.processVal', { pid: p.pid, name: p.root_name, root: p.root_pid }))}</div>
+    <div>${esc(t('router.cmd'))}</div><div><pre class="mono">${esc(p.cmdline)}</pre></div>`;
   html += '</div>';
   if (p) {
     const saved = currentRouterForm();
     const diffs = ['Port', 'ModelsMax', 'Build', 'McpMode'].filter(k => String(saved[k]) !== String(p.running[k]));
-    if (diffs.length) html += `<div class="mismatch">저장된 옵션과 실행 중인 값이 달라요 (${diffs.join(', ')}) → 재시작하면 적용돼요.</div>`;
-  } else html += '<div class="mismatch">라우터 프로세스를 못 찾았어요 (start-router 로 띄운 게 아닌 듯). 중지/재시작은 직접 해 주세요.</div>';
+    if (diffs.length) html += `<div class="mismatch">${esc(t('router.mismatch', { list: diffs.join(', ') }))}</div>`;
+  } else html += `<div class="mismatch">${esc(t('router.notFound'))}</div>`;
   el.innerHTML = html;
 }
 function renderRouterForm() {
   const f = $('#rForm'); const saved = S.router_options || {};
+  const prev = f.children.length ? currentRouterForm() : null;   // 언어만 바꿀 때 입력 중이던 값 유지
   f.innerHTML = '';
   for (const fd of S.router_fields) {
-    const val = fd.name in saved ? saved[fd.name] : fd.default;
+    const val = prev ? prev[fd.name] : (fd.name in saved ? saved[fd.name] : fd.default);
     const row = document.createElement('div'); row.className = 'row';
     let ctl;
     if (fd.type === 'enum') ctl = `<select data-f="${fd.name}">${fd.choices.map(c => `<option ${c === val ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>`;
-    else if (fd.type === 'bool') ctl = `<label class="chk"><input type="checkbox" data-f="${fd.name}" ${val ? 'checked' : ''}> 켜기</label>`;
+    else if (fd.type === 'bool') ctl = `<label class="chk"><input type="checkbox" data-f="${fd.name}" ${val ? 'checked' : ''}> ${esc(t('router.enable'))}</label>`;
     else ctl = `<input type="number" data-f="${fd.name}" value="${esc(val)}" min="${fd.min}" max="${fd.max}">`;
-    row.innerHTML = `<div class="lab"><div class="lt"><span class="nm">${esc(fd.label)}</span><code>-${esc(fd.name)}</code></div>
-      <div class="ds">${esc(fd.help)} · 기본 ${esc(String(fd.default))}</div></div><div class="ctl">${ctl}</div>`;
+    row.innerHTML = `<div class="lab"><div class="lt"><span class="nm">${esc(L(fd.label))}</span><code>-${esc(fd.name)}</code></div>
+      <div class="ds">${esc(L(fd.help))} · ${esc(t('router.default', { v: String(fd.default) }))}</div></div><div class="ctl">${ctl}</div>`;
     f.append(row);
   }
   const p = S.paths;
-  $('#rFiles').innerHTML = `<div>내 설정</div><div class="mono">${esc(p.override)}</div><div>자동 생성</div><div class="mono">${esc(p.models_ini)}</div>
-    <div>라우터 옵션</div><div class="mono">${esc(p.root)}\\router-options.json</div>`;
+  $('#rFiles').innerHTML = [['files.override', p.override], ['files.generated', p.models_ini], ['files.folders', p.folders], ['files.routerOptions', p.router_options]]
+    .map(([k, v]) => `<div>${esc(t(k))}</div><div class="mono">${esc(v)}</div>`).join('');
 }
 function currentRouterForm() {
   const out = {};
@@ -716,31 +1053,26 @@ function currentRouterForm() {
   }
   return out;
 }
-function loadedList() {
-  return Object.entries(LIVE?.router?.models || {}).filter(([, x]) => isRunning(x.status)).map(([id]) => id);
-}
 $('#rSave').onclick = async () => {
   try {
     const r = await api('/api/router/options', { options: currentRouterForm() });
-    S.router_options = r.options; toast('라우터 옵션을 저장했어요. 재시작하면 적용돼요.', 'ok'); loadRouterInfo();
+    S.router_options = r.options; toast(t('toast.routerSaved'), 'ok'); loadRouterInfo();
   } catch (e) { toast(e.message, 'err', 8000); }
 };
 async function routerAction(act) {
   const ld = loadedList();
   if (act !== 'start') {
-    const html = (ld.length ? `<p class="warnp">로드된 모델이 내려가요: <b>${ld.map(esc).join(', ')}</b><br>ComfyUI 등에서 쓰는 중이면 요청이 끊겨요.</p>` : '')
-      + `<p class="muted">'llama.cpp router' 창과 MCP 게이트웨이, 모델 감시가 같이 종료${act === 'restart' ? '되고 새 창으로 다시 시작돼요' : '돼요'}.</p>`;
-    if (!await confirmBox(act === 'restart' ? '라우터를 재시작할까요?' : '라우터를 중지할까요?', html, act === 'restart' ? '재시작' : '중지', act === 'restart' ? 'primary' : 'danger')) return;
+    const html = (ld.length ? `<p class="warnp">${t('confirm.loaded', { list: esc(ld.join(', ')) })}</p>` : '')
+      + `<p class="muted">${esc(t(act === 'restart' ? 'confirm.restartNote' : 'confirm.stopNote'))}</p>`;
+    if (!await confirmBox(t(act === 'restart' ? 'confirm.restartTitle' : 'confirm.stopTitle'), html,
+      t(act === 'restart' ? 'router.restart' : 'router.stop'), act === 'restart' ? 'primary' : 'danger')) return;
   }
-  busy(act === 'stop' ? '라우터 중지 중…' : act === 'start' ? '라우터 시작 요청 중…' : '라우터 재시작 중…');
+  busy(t('busy.' + act));
   try {
     await api('/api/router/' + act, {});
     busy(false);
-    if (act === 'stop') toast('라우터를 중지했어요', 'ok');
-    else {
-      toast("라우터를 시작했어요 - 'llama.cpp router' 창에서 진행 상황이 보여요", 'ok', 6000);
-      waitRouterUp();
-    }
+    if (act === 'stop') toast(t('toast.stopped'), 'ok');
+    else { toast(t('toast.started'), 'ok', 6000); waitRouterUp(); }
   } catch (e) { busy(false); toast(e.message, 'err', 9000); }
   pollLive(); loadRouterInfo();
 }
@@ -748,52 +1080,68 @@ async function waitRouterUp() {
   for (let i = 0; i < 90; i++) {
     await new Promise(r => setTimeout(r, 2000));
     await pollLive();
-    if (LIVE?.router?.models) { toast('라우터가 준비됐어요', 'ok'); await loadState(true); loadRouterInfo(); return; }
+    if (LIVE?.router?.models) { toast(t('toast.ready'), 'ok'); await loadState(true); loadRouterInfo(); return; }
   }
-  toast("라우터가 3분 안에 응답하지 않았어요 - 'llama.cpp router' 창을 확인하세요", 'err', 10000);
+  toast(t('toast.timeout'), 'err', 10000);
 }
 $('#rStart').onclick = () => routerAction('start');
 $('#rStop').onclick = () => routerAction('stop');
 $('#rRestart').onclick = () => routerAction('restart');
 
 // ------------------------------------------------------------------ 시작
-for (const b of $$('.tabs button')) b.onclick = () => {
-  $$('.tabs button').forEach(x => x.classList.toggle('on', x === b));
-  $('#tab-models').hidden = b.dataset.tab !== 'models';
-  $('#tab-router').hidden = b.dataset.tab !== 'router';
-  if (b.dataset.tab === 'router') { renderRouterStatus(); loadRouterInfo(); }
-};
+function showTab(name) {
+  TAB = name;
+  $$('.tabs button').forEach(x => x.classList.toggle('on', x.dataset.tab === name));
+  for (const n of ['models', 'folders', 'router']) $('#tab-' + n).hidden = n !== name;
+  if (name === 'router') { renderRouterStatus(); loadRouterInfo(); }
+  if (name === 'folders' && S) renderFolders();
+}
+for (const b of $$('.tabs button')) b.onclick = () => showTab(b.dataset.tab);
 document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); if (!$('#tab-models').hidden) save(); }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); if (TAB === 'models') save(); }
   if (e.key === 'Escape' && !$('#modal').hidden && $('#mFoot').children.length) $('#mFoot').firstChild.click();
+  if (e.key === 'Enter' && !$('#modal').hidden && e.target.closest?.('#mBody') && $('#mFoot').children.length > 1) $('#mFoot').lastChild.click();
 });
 window.addEventListener('beforeunload', e => { if (Object.keys(DRAFT).length) { e.preventDefault(); e.returnValue = ''; } });
 
-async function loadState(keepScroll) {
+function rerender(keep) {
   const top = $('#detail').scrollTop; const q = $('#q')?.value, only = $('#onlySet')?.checked, open = $('#allopts')?.open;
-  S = await api('/api/state');
-  OPT = {}; ALIAS = {};
-  for (const o of S.options) { OPT[o.id] = o; for (const n of [...o.names, ...o.neg]) ALIAS[n] ??= o.id; }
-  if (!CUR || !model(CUR)) CUR = S.models[0]?.id;
-  renderList(); renderDetail(); renderRouterForm();
-  if (keepScroll) {
+  listSig = '';
+  renderList(); renderDetail(); renderRouterForm(); renderFolders();
+  if (keep) {
     if (q) $('#q').value = q; if (only) $('#onlySet').checked = true; if (open) $('#allopts').open = true;
     if (q || only) applyFilter();
     $('#detail').scrollTop = top;
   }
 }
+async function loadState(keep) {
+  S = await api('/api/state');
+  OPT = {}; ALIAS = {};
+  for (const o of S.options) { OPT[o.id] = o; for (const n of [...o.names, ...o.neg]) ALIAS[n] ??= o.id; }
+  if (!CUR || !model(CUR)) CUR = S.models[0]?.id;
+  rerender(keep);
+}
+$('#langSel').onchange = () => {
+  LANG = $('#langSel').value;
+  try { localStorage.setItem('llamaConfigUi.lang', LANG); } catch {}
+  applyStatic();
+  if (S) rerender(true);
+  renderLive();
+  if (TAB === 'router') renderRouterStatus();
+};
+
 (async () => {
+  applyStatic();
   if (location.protocol === 'file:') {
-    $('#modelList').innerHTML = '';
-    $('#detail').innerHTML = `<div class="empty"><b>index.html 을 파일로 직접 열었어요.</b><br><br>
-      이 화면은 설정 서버를 통해서만 동작해요. 바탕화면 <b>'llama.cpp 설정'</b>(C:\\AI\\llama.cpp\\config-ui.bat)을 실행하거나<br>
-      서버가 이미 켜져 있으면 <a href="${SERVER_URL}">${SERVER_URL}</a> 로 여세요.</div>`;
-    $('#routerPill').className = 'pill down'; $('#routerPill').textContent = '파일로 열림 - 서버 주소로 여세요';
+    $('#detail').innerHTML = `<div class="empty">${t('file.guard', { url: SERVER_URL })}</div>`;
+    $('#routerPill').className = 'pill down'; $('#routerPill').textContent = t('pill.file');
     return;
   }
+  $('#routerPill').textContent = t('pill.checking');
+  $('#modelList').innerHTML = `<div class="empty">${esc(t('list.loading'))}</div>`;
   pollLive();
   try { await loadState(); }
-  catch (e) { $('#detail').innerHTML = `<div class="empty">불러오기 실패: ${esc(e.message)}</div>`; }
+  catch (e) { $('#detail').innerHTML = `<div class="empty">${esc(t('load.failed', { e: e.message }))}</div>`; }
   setInterval(pollLive, 2500);
 })();
 </script>

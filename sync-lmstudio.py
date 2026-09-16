@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-LM Studio -> llama.cpp 동기화
+LM Studio(있으면) + 모델 폴더 -> llama.cpp 동기화
   python sync-lmstudio.py            models.ini + mcp.json 둘 다 재생성
   python sync-lmstudio.py --models   models.ini 만
   python sync-lmstudio.py --mcp      mcp.json 만
   python sync-lmstudio.py --dry-run  파일을 쓰지 않고 결과만 출력
 
 models.ini (llama-server --models-preset)
-  - LM Studio 모델 폴더의 모든 LLM GGUF 를 스캔 (복사 안 함, 경로만 참조)
+  - LM Studio 모델 폴더 + model-folders.json 의 폴더에서 모든 LLM GGUF 를 하위 폴더까지 스캔 (복사 안 함, 경로만 참조)
+      model-folders.json = {"lmstudio": true, "folders": ["D:/models", ...]}   (설정 UI 의 '폴더' 탭에서 편집)
+      LM Studio 가 없거나 "lmstudio": false 면 폴더만 사용. 폴더 모델의 id 는 파일 이름에서 만듦
   - 모델 id = LM Studio API 식별자 (model-index-cache.json 의 defaultIdentifier, 예: qwen3.8-27b)
     -> LM Studio 용으로 맞춰 둔 외부 앱의 "model" 값을 그대로 쓸 수 있음
   - 같은 폴더의 mmproj-*.gguf 자동 연결 (비전)
@@ -62,11 +64,14 @@ def lm_home():
 
 
 LM = lm_home()
+HAS_LM = os.path.isdir(LM)
 SETTINGS = {}
-try:
-    SETTINGS = json.load(open(os.path.join(LM, "settings.json"), encoding="utf-8"))
-except Exception as e:
-    print(f"[warn] settings.json 읽기 실패: {e}")
+if HAS_LM:
+    try:
+        SETTINGS = json.load(open(os.path.join(LM, "settings.json"), encoding="utf-8"))
+    except Exception as e:
+        print(f"[warn] settings.json 읽기 실패: {e}")
+FOLDERS_FILE = os.path.join(HERE, "model-folders.json")
 
 
 def norm(p):
@@ -75,6 +80,24 @@ def norm(p):
 
 def fwd(p):
     return os.path.abspath(p).replace("\\", "/")
+
+
+def under(p, root):
+    p, root = norm(p), norm(root)
+    return p == root or p.startswith(root.rstrip("\\/") + os.sep)
+
+
+def load_folders():
+    """model-folders.json -> (LM Studio 모델 포함 여부, [모델 폴더])"""
+    try:
+        d = json.load(open(FOLDERS_FILE, encoding="utf-8-sig"))
+    except FileNotFoundError:
+        return True, []
+    except Exception as e:
+        print(f"[warn] model-folders.json 읽기 실패(무시): {e}")
+        return True, []
+    folders = [os.path.abspath(os.path.expanduser(f)) for f in d.get("folders", []) if isinstance(f, str) and f.strip()]
+    return d.get("lmstudio", True) is not False, folders
 
 
 # ----------------------------------------------------------------------------- GGUF header
@@ -267,21 +290,38 @@ SPLIT_RE = re.compile(r"-(\d{5})-of-(\d{5})\.gguf$", re.I)
 DRAFT_RE = re.compile(r"^(mtp|dspark|dflash)-", re.I)  # llama.cpp --models-dir 와 같은 드래프터 접두사
 
 
+def model_roots():
+    """[(폴더, 'lmstudio' | 'folder')]"""
+    use_lm, folders = load_folders()
+    roots = []
+    if use_lm and HAS_LM:
+        base = os.path.join(LM, "models")
+        if os.path.isdir(base):
+            roots.append((base, "lmstudio"))
+        dl = SETTINGS.get("downloadsFolder")
+        if dl and os.path.isdir(dl) and not under(dl, base):
+            roots.append((dl, "lmstudio"))
+    for f in folders:
+        if not os.path.isdir(f):
+            print(f"[warn] 모델 폴더 없음(건너뜀): {f}")
+        elif not any(under(f, r) for r, _ in roots):
+            roots.append((f, "folder"))
+    return roots
+
+
 def scan_models():
-    roots = [os.path.join(LM, "models")]
-    dl = SETTINGS.get("downloadsFolder")
-    if dl and os.path.isdir(dl) and not norm(dl).startswith(norm(roots[0])):
-        roots.append(dl)
+    """(roots, [(gguf 경로, root, kind)])"""
+    roots = model_roots()
     seen = set()
     ggufs = []
-    for root in roots:
+    for root, kind in roots:
         for dp, dn, fn in os.walk(root):
             for f in fn:
                 if f.lower().endswith(".gguf"):
                     p = norm(os.path.join(dp, f))
                     if p not in seen:
                         seen.add(p)
-                        ggufs.append(os.path.join(dp, f))
+                        ggufs.append((os.path.join(dp, f), root, kind))
     return roots, sorted(ggufs)
 
 
@@ -314,15 +354,15 @@ def to_id(s):
 
 def build_models():
     roots, ggufs = scan_models()
-    index = load_index()
+    index = load_index() if any(kind == "lmstudio" for _, kind in roots) else {}
     by_dir = {}
-    for g in ggufs:
+    for g, _, _ in ggufs:
         by_dir.setdefault(os.path.dirname(g), []).append(g)
 
     entries = []
     skipped = []
     drafters = {}  # dir -> [드래프터 GGUF]  (LM Studio domain=drafter, gemma4-assistant, mtp-/dspark-/dflash- 접두사)
-    for g in ggufs:
+    for g, groot, kind in ggufs:
         fn = os.path.basename(g)
         if fn.lower().startswith("mmproj"):
             continue
@@ -356,21 +396,18 @@ def build_models():
             quant = bai[0]
         if not mid:
             mid = to_id(re.sub(r"\.gguf$", "", SPLIT_RE.sub(".gguf", fn), flags=re.I))
-        # LM Studio 상대 키 (user-concrete-model-default-config 용)
-        rel = None
-        root = ie.get("containingDirAbsolutePath")
-        sub = ie.get("containingDirSubpath")
-        if sub and ie.get("file"):
-            rel = sub.replace("\\", "/") + "/" + ie["file"]
-        else:
-            for r in roots:
-                if norm(g).startswith(norm(r)):
-                    rel = os.path.relpath(g, r).replace("\\", "/")
-                    # downloadsFolder 가 models 하위인 경우 (예: models/HauhauCS/...) 첫 폴더를 떼고도 시도
-                    break
-        cfg = lm_model_config(rel) if rel else {}
-        if not cfg and rel and "/" in rel:
-            cfg = lm_model_config(rel.split("/", 1)[1])
+        # LM Studio 상대 키 (user-concrete-model-default-config 용). 폴더 모델은 LM Studio 설정 없음
+        cfg = {}
+        if kind == "lmstudio":
+            sub = ie.get("containingDirSubpath")
+            if sub and ie.get("file"):
+                rel = sub.replace("\\", "/") + "/" + ie["file"]
+            else:
+                # downloadsFolder 가 models 하위인 경우 (예: models/<폴더>/...) 첫 폴더를 떼고도 시도
+                rel = os.path.relpath(g, groot).replace("\\", "/")
+            cfg = lm_model_config(rel)
+            if not cfg and "/" in rel:
+                cfg = lm_model_config(rel.split("/", 1)[1])
 
         mmprojs = [p for p in by_dir.get(os.path.dirname(g), []) if os.path.basename(p).lower().startswith("mmproj")]
         entries.append({
@@ -380,6 +417,7 @@ def build_models():
             "display": ie.get("displayName") or info["name"] or mid,
             "index_ctx": ie.get("contextLength"),
             "draft": None,
+            "source": kind, "root": groot,
         })
 
     # 같은 폴더의 드래프터 -> spec-draft-model (내장 MTP 헤드가 있는 모델은 그걸 쓰므로 제외)
@@ -506,7 +544,7 @@ def write_models_ini(entries, skipped, roots):
     L("")
     L("; =====================================================================================")
     L(";  이 파일은 sync-lmstudio.py 가 자동 생성합니다. 직접 고치지 말고 models.override.ini 를 쓰세요.")
-    L(";  모델 소스: " + " | ".join(fwd(r) for r in roots) + "  (LM Studio 폴더를 그대로 참조, 복사 안 함)")
+    L(";  모델 소스: " + (" | ".join(fwd(r) for r, _ in roots) or "(없음)") + "  (LM Studio 폴더를 그대로 참조, 복사 안 함)")
     L(";  섹션명 = 모델 id (API 'model' 필드 / WebUI 드롭다운) = LM Studio API 식별자와 동일")
     L(";  키 = llama-server 인자(앞의 -- 제외).  ctx-size / cache-type-k,v 등은 LM Studio 모델별 로드 설정에서 복사")
     L(";  sleep-idle-seconds = LM Studio JIT TTL 과 동일: 이 시간 동안 요청이 없으면 VRAM 해제(다음 요청 시 자동 재로드)")
@@ -559,6 +597,9 @@ def write_models_ini(entries, skipped, roots):
 # ----------------------------------------------------------------------------- mcp
 def build_mcp():
     src_p = os.path.join(LM, "mcp.json")
+    if not os.path.isfile(src_p):
+        print(f"[mcp] LM Studio mcp.json 없음 ({src_p}) - MCP 동기화 건너뜀")
+        return
     try:
         src = json.load(open(src_p, encoding="utf-8"))
     except Exception as e:
