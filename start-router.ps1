@@ -23,6 +23,9 @@
 #    .\start-router.ps1 -NoSync               동기화 건너뛰기
 #    .\start-router.ps1 -ModelsMax 2          모델 2개까지 동시 상주
 #    .\start-router.ps1 -Build fastmtp        패치 빌드(C:\AI\llama.cpp-fastmtp) - FastMTP 사이드카 실험용
+#    .\start-router.ps1 -Build prismml        PrismML fork(D:\LLM\PrismML-Bonsai2\bin) - Ternary Bonsai 2 를 쓰려면 필수
+#                                             (Bonsai 2 의 PQ2_0/PTQ1_0 은 Hadamard 변환이 필요해 official 빌드로는 로드 실패.
+#                                              build 10709 라 official(10502) 의 상위호환 - 다른 모델도 그대로 돌아감)
 #
 #  router-options.json (설정 UI 라우터 탭에서 저장) 이 있으면 명령줄에 안 준 파라미터는 거기서 읽음
 #
@@ -32,7 +35,7 @@ param(
     [int]$Port = 8080,
     [string]$BindHost = "127.0.0.1",
     [int]$ModelsMax = 1,
-    [ValidateSet("fastmtp","official")]
+    [ValidateSet("fastmtp","official","prismml")]
     [string]$Build = "official",
     [ValidateSet("browser","server","off")]
     [string]$McpMode = "browser",
@@ -69,10 +72,16 @@ if (-not $NoSync) {
 }
 
 $fastmtpExe = Join-Path (Split-Path $PSScriptRoot -Parent) "llama.cpp-fastmtp\llama-server.exe"  # 옆 폴더의 패치 빌드
+$prismmlExe = "D:\LLM\PrismML-Bonsai2\bin\llama-server.exe"  # PrismML fork - Ternary Bonsai 2 (PQ2_0/PTQ1_0) 전용 커널 포함
 $exe = if ($Build -eq "fastmtp" -and (Test-Path $fastmtpExe)) {
     $fastmtpExe
+} elseif ($Build -eq "prismml" -and (Test-Path $prismmlExe)) {
+    $prismmlExe
 } else {
     "$PSScriptRoot\llama-server.exe"
+}
+if ($Build -eq "prismml" -and -not (Test-Path $prismmlExe)) {
+    Write-Host "[build] prismml 빌드를 찾을 수 없어 official 로 대체합니다: $prismmlExe" -ForegroundColor Yellow
 }
 
 # MCP 설정이 없으면(LM Studio 미사용 등) MCP 끔. 없는 파일을 --ui-config-file / --mcp-servers-config 로 넘기면 llama-server 가 시작하자마자 종료됨

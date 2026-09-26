@@ -672,10 +672,10 @@ ROUTER_FIELDS = [
      "label": {"ko": "동시에 올릴 모델 수", "en": "Models loaded at once"},
      "help": {"ko": "VRAM 에 동시에 상주할 모델 수. 넘치면 오래 안 쓴 모델부터 내림. 0 = 무제한",
               "en": "How many models stay in VRAM at the same time; the least recently used is unloaded first. 0 = unlimited"}},
-    {"name": "Build", "type": "enum", "choices": ["official", "fastmtp"], "default": "official",
+    {"name": "Build", "type": "enum", "choices": ["official", "fastmtp", "prismml"], "default": "official",
      "label": {"ko": "빌드", "en": "Build"},
-     "help": {"ko": "official = 이 폴더의 llama-server.exe,  fastmtp = 옆 폴더 llama.cpp-fastmtp 의 패치 빌드(실험용, 없으면 official)",
-              "en": "official = llama-server.exe in this folder,  fastmtp = patched build in the sibling folder llama.cpp-fastmtp (experimental, falls back to official)"}},
+     "help": {"ko": "official = 이 폴더의 llama-server.exe,  fastmtp = 옆 폴더 llama.cpp-fastmtp 의 패치 빌드(실험용, 없으면 official),  prismml = D:\\LLM\\PrismML-Bonsai2\\bin 의 PrismML fork — Ternary Bonsai 2 를 쓰려면 필수(PQ2_0/PTQ1_0 은 official 빌드로 로드 실패). build 10709 로 official(10502) 상위호환이라 다른 모델도 그대로 동작",
+              "en": "official = llama-server.exe in this folder,  fastmtp = patched build in the sibling folder llama.cpp-fastmtp (experimental, falls back to official),  prismml = PrismML fork in D:\\LLM\\PrismML-Bonsai2\\bin — required for Ternary Bonsai 2 (its PQ2_0/PTQ1_0 will not load on the official build). It is build 10709, a superset of official (10502), so the other models still work"}},
     {"name": "McpMode", "type": "enum", "choices": ["browser", "server", "off"], "default": "browser",
      "label": {"ko": "MCP 모드", "en": "MCP mode"},
      "help": {"ko": "browser = WebUI 에서 서버별로 켜고 끔(게이트웨이),  server = llama-server 가 전부 직접 띄움,  off = MCP 없음. LM Studio MCP 설정이 없으면 자동으로 off",
@@ -844,7 +844,9 @@ def find_router():
         running = {
             "Port": port,
             "ModelsMax": int(mm.group(1)) if mm else 4,
-            "Build": "fastmtp" if "llama.cpp-fastmtp" in cmd.lower() else "official",
+            "Build": ("fastmtp" if "llama.cpp-fastmtp" in cmd.lower()
+                      else "prismml" if "prismml-bonsai2" in cmd.lower()
+                      else "official"),
             "McpMode": "server" if "--mcp-servers-config" in cmd else ("browser" if "--ui-config-file" in cmd else "off"),
         }
         return {"pid": p["ProcessId"], "root_pid": root["ProcessId"], "root_name": root["Name"],
