@@ -299,6 +299,9 @@ const I18N = {
     'args.summary': '실제 실행 인자 (라우터 기준)', 'args.off': '(라우터가 꺼져 있음)', 'args.missing': '(라우터 목록에 없음 - 저장 후 reload 되면 보여요)',
     'search.ph': '옵션 검색 — 이름·설명 (예: rope, cache, draft, 온도)', 'filter.onlySet': '값이 있는 옵션만',
     'btn.resetAll': '내 설정 모두 지우기', 'title.resetAll': '이 모델의 내 설정(override)을 모두 지우고 자동 값으로',
+    'toast.clientSynced': 'Qwen Code·Hermes 설정도 맞췄어요 ({list}) — 새로 연 세션부터 적용',
+    'btn.exportJson': 'JSON 저장', 'btn.copyJson': 'JSON 복사', 'title.exportJson': '이 모델의 현재 옵션 값(저장 안 된 변경 포함)과 출처를 JSON 으로 - AI 에게 물어볼 때 붙여넣기용',
+    'toast.jsonSaved': '저장했어요: {name} (다운로드 폴더)', 'toast.jsonCopied': 'JSON 을 클립보드에 복사했어요',
     'toast.nothingToReset': '지울 내 설정이 없어요', 'toast.resetMarked': "{n}개 항목을 지우도록 표시했어요. '저장하고 적용'을 눌러야 반영돼요.",
     'btn.removeModel': '목록에서 제거', 'confirm.removeModel.title': '이 수동 추가 모델을 제거할까요?',
     'confirm.removeModel.body': 'models.override.ini 에서 <code>[{id}]</code> 섹션을 지워요. 모델 파일은 지우지 않아요.',
@@ -377,6 +380,9 @@ const I18N = {
     'args.summary': 'Actual launch arguments (from the router)', 'args.off': '(router is off)', 'args.missing': '(not in the router list yet - appears after save/reload)',
     'search.ph': 'Search options — name or description (e.g. rope, cache, draft, temp)', 'filter.onlySet': 'Only options with a value',
     'btn.resetAll': 'Clear all custom values', 'title.resetAll': 'Remove all overrides of this model and use automatic values',
+    'toast.clientSynced': 'Qwen Code / Hermes settings updated too ({list}) — applies to newly started sessions',
+    'btn.exportJson': 'Save JSON', 'btn.copyJson': 'Copy JSON', 'title.exportJson': "This model's current option values (incl. unsaved edits) and their sources as JSON - handy for asking an AI",
+    'toast.jsonSaved': 'Saved: {name} (Downloads folder)', 'toast.jsonCopied': 'Copied JSON to the clipboard',
     'toast.nothingToReset': 'No custom values to clear', 'toast.resetMarked': "Marked {n} values to clear. Press 'Save & apply' to apply.",
     'btn.removeModel': 'Remove from list', 'confirm.removeModel.title': 'Remove this manually added model?',
     'confirm.removeModel.body': 'Deletes the <code>[{id}]</code> section from models.override.ini. The model file is not deleted.',
@@ -671,7 +677,9 @@ function renderDetail() {
     <details class="args"><summary>${esc(t('args.summary'))}</summary><pre id="dArgs"></pre></details>
     <div class="tools"><input type="search" id="q" placeholder="${esc(t('search.ph'))}">
       <label class="chk"><input type="checkbox" id="onlySet"> ${esc(t('filter.onlySet'))}</label>
-      <button class="ghost" id="resetAll" title="${esc(t('title.resetAll'))}">${esc(t('btn.resetAll'))}</button></div>
+      <button class="ghost" id="resetAll" title="${esc(t('title.resetAll'))}">${esc(t('btn.resetAll'))}</button>
+      <button class="ghost" id="exportJson" title="${esc(t('title.exportJson'))}">${esc(t('btn.exportJson'))}</button>
+      <button class="ghost" id="copyJson" title="${esc(t('title.exportJson'))}">${esc(t('btn.copyJson'))}</button></div>
     <div id="curated"></div>
     ${m.unknown.length ? `<div class="group unknown"><h3>${esc(t('unknown.title'))} <small>${esc(t('unknown.note'))}</small></h3>
       ${m.unknown.map(([k, v]) => `<div class="row"><code>${esc(k)}</code><code>${esc(v)}</code><span></span></div>`).join('')}</div>` : ''}
@@ -717,11 +725,67 @@ function renderDetail() {
     ids.forEach(id => setDraft(m, id, null));
     toast(t('toast.resetMarked', { n: ids.length }));
   };
+  $('#exportJson').onclick = () => exportJson(m, false);
+  $('#copyJson').onclick = () => exportJson(m, true);
   $('#sbRevert').onclick = () => { delete DRAFT[m.id]; renderDetail(); renderList(); };
   $('#sbSave').onclick = save;
   $('#dLoad').onclick = () => loadUnload(m.id, isRunning(statusOf(m.id)) ? 'unload' : 'load');
   if ($('#dRemove')) $('#dRemove').onclick = () => removeModel(m);
   updateSaveBar(); renderLiveDetail();
+}
+
+// 지금 화면에 보이는 값(저장 안 된 변경 포함)을 AI 에게 물어보기 좋은 JSON 으로
+function settingsJson(m) {
+  const li = LANG === 'en' ? 3 : 1;
+  const curated = {};
+  for (const g of CURATED) for (const item of g.items) curated[resolve(item[0])] = { group: L(g.title), label: item[li] };
+  const options = {}, removedAuto = [];
+  const add = (id, value, src) => {
+    const o = OPT[id];
+    options['--' + id] = { value, source: src, ...(curated[id] ? curated[id] : { group: o.group }), ...(o.default ? { default: o.default } : {}) };
+  };
+  for (const o of S.options) {
+    const id = o.id, v = curVal(m, id);
+    if (v === '!') removedAuto.push('--' + id);
+    if (v !== null && v !== '!') { add(id, v, 'user'); continue; }
+    const inh = inherited(m, id, v === '!');
+    if (inh.src !== 'default') add(id, inh.v, inh.src === 'auto' ? (m.source === 'lmstudio' ? 'auto (LM Studio)' : 'auto (detected)') : 'global [*]');
+    else if (curated[id]) add(id, inh.v === '' ? null : inh.v, 'llama.cpp default');
+  }
+  const x = LIVE?.router?.models?.[m.id];
+  const out = {
+    exported_at: new Date().toISOString(),
+    exported_from: 'llama.cpp config-ui (models.ini router preset)',
+    model: {
+      id: m.id, name: m.display, arch: m.arch, file: m.file, size_gb: m.size_gb || null, trained_ctx: m.ctx_train || null,
+      mtp: !!m.mtp, vision: !!m.vision, drafter: m.draft || null, source: m.source,
+    },
+    status: statusOf(m.id),
+    note: 'source: user = my override, auto = auto-detected, global [*] = shared section, llama.cpp default = no value set',
+    options,
+  };
+  if (removedAuto.length) out.removed_auto_values = removedAuto;
+  if (DRAFT[m.id]?.size) out.unsaved_changes = Object.fromEntries([...DRAFT[m.id]].map(([k, v]) => ['--' + k, v]));
+  if (m.unknown.length) out.unknown_keys = Object.fromEntries(m.unknown);
+  if (x?.args?.length) out.launch_args = x.args;
+  if (m.notes.length) out.notes = m.notes.map(L);
+  return JSON.stringify(out, null, 2);
+}
+async function exportJson(m, copy) {
+  const json = settingsJson(m);
+  if (copy) {
+    try { await navigator.clipboard.writeText(json); toast(t('toast.jsonCopied'), 'ok'); }
+    catch (e) { toast(e.message, 'err', 7000); }
+    return;
+  }
+  const d = new Date(), p = n => String(n).padStart(2, '0');
+  const stamp = `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+  a.download = `${m.id.replace(/[\\/:*?"<>|\s]+/g, '_')}-settings-${stamp}.json`;
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  toast(t('toast.jsonSaved', { name: a.download }), 'ok');
 }
 
 function rowEl(m, id, label, desc) {
@@ -854,6 +918,7 @@ function updateSaveBar() {
 function syncResultToasts(r) {
   if (r.unloaded?.length) toast(t('toast.unloaded', { list: r.unloaded.join(', ') }), 'ok', 6000);
   if (r.reload_error) toast(t('toast.reloadFailed', { e: r.reload_error }), 'err', 9000);
+  if (r.client_synced?.length) toast(t('toast.clientSynced', { list: r.client_synced.map(c => `${c.client === 'hermes' ? 'Hermes' : 'Qwen'} ${c.id} ${Math.floor(c.context / 1000)}K`).join(', ') }), 'ok', 7000);
 }
 
 async function save() {

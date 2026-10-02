@@ -13,6 +13,7 @@ llama.cpp 설정 UI 서버  (설계: docs/config-ui-design.md)
   - 표준 라이브러리만 사용. 127.0.0.1 전용
 """
 import http.server, importlib.util, json, os, re, shutil, socket, subprocess, sys, threading, time, urllib.error, urllib.request, webbrowser
+import client_sync  # 같은 폴더 (NInfer 설정 UI 와 같은 파일)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -466,7 +467,40 @@ def sync_and_reload(rollback):
                                   if v["status"] in ("loaded", "loading", "sleeping") and after.get(k, {}).get("status") in (None, "unloaded")]
         except Exception as e:
             result["reload_error"] = str(e)
+    # Qwen Code·Hermes 는 컨텍스트 길이를 서버에서 읽지 않는다 -- 그쪽 설정도 같이 맞춘다. 실패해도 저장은 끝난 것이다.
+    try:
+        synced = client_sync.sync_all(client_targets())
+    except Exception as e:
+        synced = [{"client": "all", "error": repr(e)}]
+    for row in synced:
+        if "error" in row:
+            log(f"client sync failed ({row['client']}): {row['error']}")
+    result["client_synced"] = [row for row in synced if "error" not in row]
     return result
+
+
+def client_targets():
+    """client_sync 에 넘길 모델 목록 -- 생성된 models.ini(자동 값 + 내 설정 + [*] 병합 결과) 기준.
+    llama-server 는 ctx-size 를 슬롯(parallel)마다 나눠 쓰므로 클라이언트가 쓸 수 있는 길이는 ctx-size / parallel 이다."""
+    cat = catalog()
+    ini, _ = load_sync_module().parse_ini(MODELS_INI)
+    glob, _ = normalize(cat, ini.get("*", []))
+    targets = []
+    for m in model_data()["models"]:
+        opts = dict(glob)
+        opts.update(normalize(cat, ini.get(m["id"], []))[0])
+        val = lambda oid: (opts.get(oid) or {}).get("value")
+        try:
+            ctx = int(val("ctx-size") or 0) or int(m["ctx_train"] or 0)
+            slots = max(1, int(val("parallel") or 1))
+        except ValueError:
+            continue
+        if ctx <= 0:
+            continue
+        mmproj = val("mmproj")
+        vision = bool(mmproj) and mmproj != "!" and str(val("mmproj-auto") or "true").lower() not in FALSEY
+        targets.append({"port": router_port(), "context": ctx // slots, "vision": vision, "model_id": m["id"]})
+    return targets
 
 
 _save_lock = threading.Lock()
